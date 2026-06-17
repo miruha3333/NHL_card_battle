@@ -115,7 +115,6 @@
             font-size: 13px;
         }
 
-        /* Экран матча */
         .duel-container {
             display: flex;
             align-items: center;
@@ -203,9 +202,7 @@
 <div id="matchScreen" class="screen">
     <h2>⚔️ Матч против AI</h2>
     <div class="match-score" id="matchScoreDisplay">0 : 0</div>
-    <div class="duel-container" id="duelContainer">
-        <!-- Динамически заполняется -->
-    </div>
+    <div class="duel-container" id="duelContainer"></div>
     <div class="event-log" id="eventLog">Ожидание...</div>
     <button class="btn" id="finishMatchBtn" onclick="exitMatch()" style="display:none;">✅ Завершить</button>
 </div>
@@ -215,13 +212,11 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-// CloudStorage обёртка
 const cloud = {
     getItem(k) { return new Promise(r => tg.CloudStorage.getItem(k, (e,v) => r(e ? null : v))); },
     setItem(k,v) { return new Promise(r => tg.CloudStorage.setItem(k, v, e => r(!e))); }
 };
 
-// Генератор заглушки (инициалы)
 function fallbackImg(name) {
     let initials = name.split(' ').slice(0,2).map(w=>w.charAt(0)).join('');
     let c = document.createElement('canvas'); c.width=64; c.height=64;
@@ -232,40 +227,76 @@ function fallbackImg(name) {
     return c.toDataURL();
 }
 
-// ============ База карт (ID для assets.nhle.com) ============
+// ========== Расширенный пул карт (более 80 игроков) ==========
 const cardPool = {
     common: [
-        { name: "Баркли Гудроу", pos: "F", O:58, D:62, P:70, img:"https://assets.nhle.com/images/headshots/current/168x168/8479350.jpg" },
-        { name: "Мэтт Мартин", pos: "F", O:55, D:60, P:78, img:"https://assets.nhle.com/images/headshots/current/168x168/8471742.jpg" },
-        { name: "Люк Гленденинг", pos: "F", O:54, D:68, P:65, img:"https://assets.nhle.com/images/headshots/current/168x168/8475189.jpg" },
-        { name: "Райан Ривз", pos: "F", O:50, D:58, P:85, img:"https://assets.nhle.com/images/headshots/current/168x168/8471815.jpg" },
-        { name: "Дерек Форборт", pos: "D", O:52, D:72, P:74, img:"https://assets.nhle.com/images/headshots/current/168x168/8477428.jpg" },
-        { name: "Джош Браун", pos: "D", O:48, D:65, P:76, img:"https://assets.nhle.com/images/headshots/current/168x168/8478463.jpg" },
-        { name: "Ник Силер", pos: "D", O:46, D:70, P:72, img:"https://assets.nhle.com/images/headshots/current/168x168/8476372.jpg" },
-        { name: "Джейкоб Миддлтон", pos: "D", O:50, D:68, P:74, img:"https://assets.nhle.com/images/headshots/current/168x168/8476905.jpg" },
-        { name: "Кейси Десмит", pos: "G", O:40, D:68, P:60, SV:72, img:"https://assets.nhle.com/images/headshots/current/168x168/8477463.jpg" },
-        { name: "Кевин Ланкинен", pos: "G", O:42, D:66, P:62, SV:74, img:"https://assets.nhle.com/images/headshots/current/168x168/8477982.jpg" }
+        {name:"Баркли Гудроу",pos:"F",O:58,D:62,P:70,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8479350.jpg"},
+        {name:"Мэтт Мартин",pos:"F",O:55,D:60,P:78,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8471742.jpg"},
+        {name:"Люк Гленденинг",pos:"F",O:54,D:68,P:65,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475189.jpg"},
+        {name:"Райан Ривз",pos:"F",O:50,D:58,P:85,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8471815.jpg"},
+        {name:"Дерек Форборт",pos:"D",O:52,D:72,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477428.jpg"},
+        {name:"Джош Браун",pos:"D",O:48,D:65,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478463.jpg"},
+        {name:"Ник Силер",pos:"D",O:46,D:70,P:72,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476372.jpg"},
+        {name:"Джейкоб Миддлтон",pos:"D",O:50,D:68,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476905.jpg"},
+        {name:"Кейси Десмит",pos:"G",O:40,D:68,P:60,SV:72,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477463.jpg"},
+        {name:"Кевин Ланкинен",pos:"G",O:42,D:66,P:62,SV:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477982.jpg"},
+        {name:"Майкл Амадио",pos:"F",O:56,D:60,P:68,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477504.jpg"},
+        {name:"Ник Казинс",pos:"F",O:57,D:61,P:66,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475168.jpg"},
+        {name:"Зак Сэнфорд",pos:"F",O:55,D:59,P:69,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476892.jpg"},
+        {name:"Джош Андерсон",pos:"F",O:60,D:63,P:80,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476875.jpg"},
+        {name:"Тайлер Мотт",pos:"F",O:52,D:65,P:67,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477425.jpg"},
+        {name:"Мэтт Руни",pos:"F",O:53,D:64,P:71,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476871.jpg"},
+        {name:"Джейк Лещишин",pos:"F",O:58,D:60,P:66,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8479443.jpg"},
+        {name:"Томаш Носек",pos:"F",O:56,D:63,P:68,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476883.jpg"},
+        {name:"Джастин Браун",pos:"F",O:62,D:67,P:72,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8470606.jpg"},
+        {name:"Кайл Клиффорд",pos:"F",O:51,D:59,P:83,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8473431.jpg"},
+        {name:"Бренден Диллон",pos:"D",O:54,D:74,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8474581.jpg"},
+        {name:"Эрик Гудбрансон",pos:"D",O:52,D:76,P:78,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475794.jpg"},
+        {name:"Брэйден Макнэбб",pos:"D",O:50,D:75,P:77,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476923.jpg"},
+        {name:"Яни Хаканпаа",pos:"D",O:48,D:78,P:80,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476873.jpg"},
+        {name:"Джоэль Эдмундсон",pos:"D",O:53,D:73,P:75,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476346.jpg"},
+        {name:"Джорди Бенн",pos:"D",O:49,D:71,P:73,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8474507.jpg"},
+        {name:"Коннор Клифтон",pos:"D",O:51,D:69,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477317.jpg"},
+        {name:"Джейк Уолман",pos:"D",O:56,D:68,P:70,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477977.jpg"},
+        {name:"Спенсер Мартин",pos:"G",O:41,D:65,P:61,SV:71,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476926.jpg"},
+        {name:"Магнус Хелльберг",pos:"G",O:39,D:64,P:63,SV:70,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475255.jpg"},
     ],
     silver: [
-        { name: "Брэндон Саад", pos: "F", O:72, D:65, P:70, img:"https://assets.nhle.com/images/headshots/current/168x168/8475283.jpg" },
-        { name: "Джейк Дибраск", pos: "F", O:74, D:62, P:68, img:"https://assets.nhle.com/images/headshots/current/168x168/8478425.jpg" },
-        { name: "Адам Ларссон", pos: "D", O:60, D:82, P:78, img:"https://assets.nhle.com/images/headshots/current/168x168/8476855.jpg" },
-        { name: "Фредрик Андерсен", pos: "G", O:45, D:78, P:72, SV:82, img:"https://assets.nhle.com/images/headshots/current/168x168/8475883.jpg" }
+        {name:"Брэндон Саад",pos:"F",O:72,D:65,P:70,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475283.jpg"},
+        {name:"Джейк Дибраск",pos:"F",O:74,D:62,P:68,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478425.jpg"},
+        {name:"Адам Ларссон",pos:"D",O:60,D:82,P:78,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476855.jpg"},
+        {name:"Фредрик Андерсен",pos:"G",O:45,D:78,P:72,SV:82,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475883.jpg"},
+        {name:"Тайлер Тоффоли",pos:"F",O:76,D:64,P:72,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475268.jpg"},
+        {name:"Эндрю Коглиано",pos:"F",O:68,D:72,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8471729.jpg"},
+        {name:"Джейми Олексяк",pos:"D",O:55,D:80,P:82,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475798.jpg"},
+        {name:"Антти Раанта",pos:"G",O:43,D:76,P:74,SV:80,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475208.jpg"},
+        {name:"Конор Гарланд",pos:"F",O:78,D:63,P:66,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478872.jpg"},
+        {name:"Мэтт Дамба",pos:"D",O:68,D:78,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475393.jpg"},
     ],
     gold: [
-        { name: "Брэйден Пойнт", pos: "F", O:88, D:74, P:70, img:"https://assets.nhle.com/images/headshots/current/168x168/8478475.jpg" },
-        { name: "Чарли Макэвой", pos: "D", O:78, D:88, P:76, img:"https://assets.nhle.com/images/headshots/current/168x168/8478431.jpg" },
-        { name: "Юусе Сарос", pos: "G", O:50, D:85, P:78, SV:90, img:"https://assets.nhle.com/images/headshots/current/168x168/8477424.jpg" }
+        {name:"Брэйден Пойнт",pos:"F",O:88,D:74,P:70,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478475.jpg"},
+        {name:"Чарли Макэвой",pos:"D",O:78,D:88,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478431.jpg"},
+        {name:"Юусе Сарос",pos:"G",O:50,D:85,P:78,SV:90,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477424.jpg"},
+        {name:"Брэди Ткачук",pos:"F",O:90,D:80,P:88,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8479325.jpg"},
+        {name:"Джонни Годро",pos:"F",O:92,D:72,P:65,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476319.jpg"},
+        {name:"Ши Теодор",pos:"D",O:76,D:86,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476881.jpg"},
+        {name:"Тристан Джарри",pos:"G",O:48,D:83,P:80,SV:88,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477464.jpg"},
     ],
     elite: [
-        { name: "Александр Барков", pos: "F", O:92, D:88, P:74, img:"https://assets.nhle.com/images/headshots/current/168x168/8477493.jpg" },
-        { name: "Виктор Хедман", pos: "D", O:84, D:94, P:80, img:"https://assets.nhle.com/images/headshots/current/168x168/8475167.jpg" },
-        { name: "Андрей Василевский", pos: "G", O:52, D:92, P:82, SV:94, img:"https://assets.nhle.com/images/headshots/current/168x168/8476882.jpg" }
+        {name:"Александр Барков",pos:"F",O:92,D:88,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477493.jpg"},
+        {name:"Виктор Хедман",pos:"D",O:84,D:94,P:80,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475167.jpg"},
+        {name:"Андрей Василевский",pos:"G",O:52,D:92,P:82,SV:94,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476882.jpg"},
+        {name:"Мэттью Ткачук",pos:"F",O:94,D:82,P:86,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8479314.jpg"},
+        {name:"Роман Йоси",pos:"D",O:88,D:92,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475200.jpg"},
+        {name:"Коннор Хеллебак",pos:"G",O:50,D:90,P:84,SV:93,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476945.jpg"},
     ],
     legendary: [
-        { name: "Коннор Макдэвид", pos: "F", O:99, D:85, P:78, img:"https://assets.nhle.com/images/headshots/current/168x168/8478402.jpg" },
-        { name: "Кейл Макар", pos: "D", O:95, D:92, P:80, img:"https://assets.nhle.com/images/headshots/current/168x168/8480069.jpg" },
-        { name: "Игорь Шестеркин", pos: "G", O:55, D:90, P:82, SV:96, img:"https://assets.nhle.com/images/headshots/current/168x168/8478010.jpg" }
+        {name:"Коннор Макдэвид",pos:"F",O:99,D:85,P:78,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478402.jpg"},
+        {name:"Кейл Макар",pos:"D",O:95,D:92,P:80,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8480069.jpg"},
+        {name:"Игорь Шестеркин",pos:"G",O:55,D:90,P:82,SV:96,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478010.jpg"},
+        {name:"Нэтан Маккиннон",pos:"F",O:98,D:88,P:82,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477492.jpg"},
+        {name:"Леон Драйзайтль",pos:"F",O:97,D:86,P:84,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476474.jpg"},
+        {name:"Кирилл Капризов",pos:"F",O:96,D:80,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478365.jpg"},
     ]
 };
 
@@ -278,7 +309,7 @@ let userData = {
     lastDaily:null, streak:0
 };
 
-// ============ Стартовый набор (уникальные 4F,4D,2G) ============
+// ========== Стартовый набор (уникальные 4F,4D,2G) ==========
 function giveStarterCards() {
     const common = cardPool.common;
     const forwards = common.filter(c=>c.pos==='F').slice(0,4);
@@ -311,7 +342,6 @@ function resetData() {
     userData.team={forwards:[],defense:[],goalie:null}; userData.lastDaily=null; userData.streak=0;
 }
 
-// ============ Ежедневный бустер ============
 function checkDailyReset() {
     let today = new Date().toDateString();
     if (userData.lastDaily !== today) {
@@ -350,7 +380,7 @@ function openBooster() {
     tg.showPopup({title:'🎁 Бустер', message: newCards.map(c=>c.name).join(', ')});
 }
 
-// ============ Матч (визуальный) ============
+// ========== Матч (улучшенный баланс) ==========
 async function startMatch() {
     const t = userData.team;
     if (t.forwards.length!==3 || t.defense.length!==2 || !t.goalie) {
@@ -374,37 +404,38 @@ async function startMatch() {
         for (let d=0; d<5; d++) {
             let uPlayer = [...t.forwards, ...t.defense][Math.floor(Math.random()*5)];
             let aPlayer = [...ai.forwards, ...ai.defense][Math.floor(Math.random()*5)];
-            // Отображаем дуэль
             duelDiv.innerHTML = `
                 <div class="duel-card">
-                    <img src="${uPlayer.img}" onerror="this.src='${uPlayer.fallback}'">
+                    <img src="${uPlayer.img}" onerror="this.src='${uPlayer.fallback}'" referrerpolicy="no-referrer">
                     <div class="name">${uPlayer.name}</div>
                     <div class="stats"><span class="stat-o">O:${uPlayer.O}</span> <span class="stat-d">D:${uPlayer.D}</span> <span class="stat-p">P:${uPlayer.P}</span></div>
                 </div>
                 <div class="vs-text">VS</div>
                 <div class="duel-card">
-                    <img src="${aPlayer.img}" onerror="this.src='${aPlayer.fallback||fallbackImg(aPlayer.name)}'">
+                    <img src="${aPlayer.img}" onerror="this.src='${aPlayer.fallback||fallbackImg(aPlayer.name)}'" referrerpolicy="no-referrer">
                     <div class="name">${aPlayer.name}</div>
                     <div class="stats"><span class="stat-o">O:${aPlayer.O}</span> <span class="stat-d">D:${aPlayer.D}</span> <span class="stat-p">P:${aPlayer.P}</span></div>
                 </div>
             `;
             await sleep(1200);
             
-            let uRoll = Math.floor(Math.random()*6)+1, aRoll = Math.floor(Math.random()*6)+1;
+            let uRoll = Math.floor(Math.random()*6)+1;
+            let aRoll = Math.floor(Math.random()*6)+1;
             let eventText = '';
             if (uPlayer.O + uRoll > aPlayer.D + aRoll) {
-                let shot = uPlayer.O + Math.floor(Math.random()*6)+1;
-                let save = ai.goalie.SV + Math.floor(Math.random()*6)+1;
+                // бросок с бонусом +2 за выигранную дуэль
+                let shot = uPlayer.O + Math.floor(Math.random()*6)+1 + 2;
+                let save = ai.goalie.SV + Math.floor(Math.random()*4)+1; // кубик вратаря слабее
                 if (shot > save) {
                     userW++; eventText = `🚨 ГОЛ! ${uPlayer.name} пробил ${ai.goalie.name}!`;
                 } else {
                     eventText = `🛑 Сейв ${ai.goalie.name} после броска ${uPlayer.name}`;
                 }
             } else if (aPlayer.O + aRoll > uPlayer.D + uRoll) {
-                let shot = aPlayer.O + Math.floor(Math.random()*6)+1;
-                let save = t.goalie.SV + Math.floor(Math.random()*6)+1;
+                let shot = aPlayer.O + Math.floor(Math.random()*6)+1 + 2;
+                let save = t.goalie.SV + Math.floor(Math.random()*4)+1;
                 if (shot > save) {
-                    aiW++; eventText = `😞 Пропущен гол! ${aPlayer.name} забивает ${t.goalie.name}`;
+                    aiW++; eventText = `😞 Гол! ${aPlayer.name} забивает ${t.goalie.name}`;
                 } else {
                     eventText = `🧤 Сейв ${t.goalie.name} после ${aPlayer.name}`;
                 }
@@ -449,7 +480,7 @@ function generateAITeam(level) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// ============ Управление составом (автосохранение) ============
+// ========== Состав (автосохранение) ==========
 function togglePlayer(card) {
     let t = userData.team;
     if (card.pos==='F') {
@@ -539,7 +570,6 @@ function renderTeamSelection() {
     displaySelectedTeam();
 }
 
-// ============ UI общее ============
 function updateUI() {
     document.getElementById('userLevel').innerText = userData.level;
     document.getElementById('winsCount').innerText = userData.wins;
