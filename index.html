@@ -7,44 +7,44 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #000; color: #FFF; padding: 16px; min-height: 100vh;
-        }
+        body { font-family:'Segoe UI',system-ui,sans-serif; background:#000; color:#FFF; padding:16px; min-height:100vh; }
         .screen { display:none; } .screen.active { display:block; }
-        h1, h2 { margin-bottom:12px; }
+        h1,h2 { margin-bottom:12px; }
         .btn {
-            background:#C8102E; color:#FFF; border:none; border-radius:8px;
-            padding:14px 20px; font-size:14px; font-weight:700; cursor:pointer;
-            margin:4px; text-transform:uppercase; transition:background 0.2s;
+            background:#C8102E; color:#FFF; border:none; border-radius:8px; padding:14px 20px;
+            font-size:14px; font-weight:700; cursor:pointer; margin:4px; text-transform:uppercase;
+            transition:background 0.2s;
         }
         .btn:active { background:#A00E24; }
         .btn.secondary { background:#1A1A1A; border:1px solid #333; }
-
         .card-list { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-start; margin-bottom:12px; }
         .position-group { width:100%; margin-bottom:10px; }
         .position-group h4 { color:#CCC; margin:8px 0 4px; font-size:13px; text-transform:uppercase; }
-
         .card-item {
-            background:#1A1A1A; border-radius:12px; padding:8px 6px; width:100px;
-            text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.8); position:relative;
-            border:1px solid #333; cursor:pointer; user-select:none;
+            background:#1A1A1A; border-radius:12px; padding:8px 6px; width:100px; text-align:center;
+            box-shadow:0 4px 12px rgba(0,0,0,0.8); position:relative; border:1px solid #333; cursor:pointer;
         }
-        .card-item img {
-            width:64px; height:64px; border-radius:50%; object-fit:cover;
-            background:#2A2A2A; border:2px solid #555;
+        .card-item .avatar {
+            width:64px; height:64px; border-radius:50%; margin:0 auto; display:flex;
+            align-items:center; justify-content:center; font-size:28px; font-weight:800; color:#FFF;
+            text-shadow:0 2px 4px rgba(0,0,0,0.5); border:2px solid #888;
         }
-        .card-item .name { font-weight:600; font-size:10px; margin:4px 0; color:#FFF; }
+        .card-item .pos-badge {
+            position:absolute; bottom:2px; right:2px; width:20px; height:20px; border-radius:50%;
+            font-size:11px; line-height:20px; font-weight:bold; background:#C8102E; color:#FFF;
+        }
+        .card-item .name { font-weight:600; font-size:10px; margin:6px 0 2px; color:#FFF; }
         .card-item .stats { display:flex; justify-content:center; gap:4px; font-size:13px; font-weight:700; }
         .stat-o { color:#0F0; } .stat-d { color:#F44; } .stat-p { color:#48F; }
-
         .info-block { background:#111; padding:12px; border-radius:10px; margin:10px 0; border:1px solid #333; }
         .team-preview { background:#0D0D0D; border-left:4px solid #C8102E; padding:10px; margin:12px 0; font-size:13px; }
         .streak-badge { background:#C8102E; padding:3px 10px; border-radius:20px; font-weight:bold; font-size:13px; }
-
-        .duel-container { display:flex; align-items:center; justify-content:center; gap:20px; margin:20px 0; flex-wrap:wrap; }
+        .duel-container { display:flex; align-items:center; justify-content:center; gap:20px; margin:20px 0; }
         .duel-card { background:#1A1A1A; border-radius:12px; padding:12px; text-align:center; width:120px; border:2px solid #333; }
-        .duel-card img { width:70px; height:70px; border-radius:50%; border:2px solid #888; }
+        .duel-card .avatar {
+            width:70px; height:70px; border-radius:50%; margin:0 auto; display:flex; align-items:center;
+            justify-content:center; font-size:30px; font-weight:800; color:#FFF; border:2px solid #888;
+        }
         .vs-text { font-size:28px; font-weight:800; color:#C8102E; }
         .event-log { background:#0A0A0A; border-radius:8px; padding:10px; margin-top:12px; font-size:14px; text-align:center; min-height:40px; border:1px solid #333; }
         .match-score { font-size:20px; font-weight:bold; margin:8px 0; text-align:center; }
@@ -52,7 +52,6 @@
 </head>
 <body>
 
-<!-- Главный экран -->
 <div id="mainScreen" class="screen active">
     <h1>🏒 NHL Card Battle</h1>
     <p id="greeting" style="font-size:18px;">Привет, менеджер!</p>
@@ -69,17 +68,16 @@
         <button class="btn secondary" onclick="showScreen('teamScreen')">👥 Состав</button>
         <button class="btn" onclick="startMatch()">⚔️ В БОЙ</button>
     </div>
+    <button class="btn secondary" style="margin-top:16px; background:#333;" onclick="resetProgress()">⚠️ Сбросить прогресс</button>
     <div id="dailyTimer" style="margin-top:14px; font-size:13px; color:#AAA;"></div>
 </div>
 
-<!-- Коллекция -->
 <div id="collectionScreen" class="screen">
     <h2>📦 Твои карты</h2>
     <div id="collectionContainer"></div>
     <button class="btn" onclick="showScreen('mainScreen')">⬅ На главную</button>
 </div>
 
-<!-- Состав -->
 <div id="teamScreen" class="screen">
     <h2>👥 Выбери состав</h2>
     <p style="color:#AAA;">3 нападающих · 2 защитника · 1 вратарь</p>
@@ -93,7 +91,6 @@
     <button class="btn" onclick="showScreen('mainScreen')">⬅ На главную (состав сохранён)</button>
 </div>
 
-<!-- Матч -->
 <div id="matchScreen" class="screen">
     <h2>⚔️ Матч против AI</h2>
     <div class="match-score" id="matchScoreDisplay">0 : 0</div>
@@ -109,180 +106,185 @@ tg.expand();
 
 const cloud = {
     getItem(k) { return new Promise(r => tg.CloudStorage.getItem(k, (e,v) => r(e ? null : v))); },
-    setItem(k,v) { return new Promise(r => tg.CloudStorage.setItem(k, v, e => r(!e))); }
+    setItem(k,v) { return new Promise(r => tg.CloudStorage.setItem(k, v, e => r(!e))); },
+    removeItem(k) { return new Promise(r => tg.CloudStorage.removeItem(k, e => r(!e))); }
 };
 
-// Прокси для фото
-function nhlPhoto(playerId) {
-    return `https://images.weserv.nl/?url=nhl.bamgrid.com/images/headshots/current/168x168/${playerId}.jpg&default=1`;
-}
-
-// Аватар-заглушка (инициалы)
+// Генератор аватара (инициалы + цвет по позиции)
 function genAvatar(name, pos) {
     let initials = name.split(' ').slice(0,2).map(w=>w[0]).join('');
-    let c = document.createElement('canvas'); c.width=128; c.height=128;
-    let ctx = c.getContext('2d');
+    let canvas = document.createElement('canvas'); canvas.width=128; canvas.height=128;
+    let ctx = canvas.getContext('2d');
     let colors = pos==='F'?['#8B0000','#C8102E'] : (pos==='D'?['#004d40','#00897b']:['#4a148c','#7b1fa2']);
     let grad = ctx.createLinearGradient(0,0,128,128);
     grad.addColorStop(0,colors[0]); grad.addColorStop(1,colors[1]);
     ctx.fillStyle = grad; ctx.fillRect(0,0,128,128);
     ctx.fillStyle = '#FFF'; ctx.font = 'bold 56px "Segoe UI"'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(initials, 64,64);
-    return c.toDataURL();
+    return canvas.toDataURL();
 }
 
-// ========== База игроков (расширенная, с ID) ==========
+// База игроков (имена + параметры)
 const cardPool = {
     common: [
-        {n:"Баркли Гудроу",p:"F",O:58,D:62,P:70,id:8479350},{n:"Мэтт Мартин",p:"F",O:55,D:60,P:78,id:8471742},
-        {n:"Люк Гленденинг",p:"F",O:54,D:68,P:65,id:8475189},{n:"Райан Ривз",p:"F",O:50,D:58,P:85,id:8471815},
-        {n:"Дерек Форборт",p:"D",O:52,D:72,P:74,id:8477428},{n:"Джош Браун",p:"D",O:48,D:65,P:76,id:8478463},
-        {n:"Ник Силер",p:"D",O:46,D:70,P:72,id:8476372},{n:"Джейкоб Миддлтон",p:"D",O:50,D:68,P:74,id:8476905},
-        {n:"Кейси Десмит",p:"G",O:40,D:68,P:60,SV:72,id:8477463},{n:"Кевин Ланкинен",p:"G",O:42,D:66,P:62,SV:74,id:8477982},
-        {n:"Майкл Амадио",p:"F",O:56,D:60,P:68,id:8477504},{n:"Ник Казинс",p:"F",O:57,D:61,P:66,id:8475168},
-        {n:"Зак Сэнфорд",p:"F",O:55,D:59,P:69,id:8476892},{n:"Джош Андерсон",p:"F",O:60,D:63,P:80,id:8476875},
-        {n:"Тайлер Мотт",p:"F",O:52,D:65,P:67,id:8477425},{n:"Мэтт Руни",p:"F",O:53,D:64,P:71,id:8476871},
-        {n:"Джейк Лещишин",p:"F",O:58,D:60,P:66,id:8479443},{n:"Томаш Носек",p:"F",O:56,D:63,P:68,id:8476883},
-        {n:"Джастин Браун",p:"F",O:62,D:67,P:72,id:8470606},{n:"Кайл Клиффорд",p:"F",O:51,D:59,P:83,id:8473431},
-        {n:"Бренден Диллон",p:"D",O:54,D:74,P:76,id:8474581},{n:"Эрик Гудбрансон",p:"D",O:52,D:76,P:78,id:8475794},
-        {n:"Брэйден Макнэбб",p:"D",O:50,D:75,P:77,id:8476923},{n:"Яни Хаканпаа",p:"D",O:48,D:78,P:80,id:8476873},
-        {n:"Джоэль Эдмундсон",p:"D",O:53,D:73,P:75,id:8476346},{n:"Джорди Бенн",p:"D",O:49,D:71,P:73,id:8474507},
-        {n:"Коннор Клифтон",p:"D",O:51,D:69,P:74,id:8477317},{n:"Джейк Уолман",p:"D",O:56,D:68,P:70,id:8477977},
-        {n:"Спенсер Мартин",p:"G",O:41,D:65,P:61,SV:71,id:8476926},{n:"Магнус Хелльберг",p:"G",O:39,D:64,P:63,SV:70,id:8475255},
-        {n:"Нико Штурм",p:"F",O:59,D:64,P:70,id:8478401},{n:"Джош Мэнсон",p:"D",O:53,D:74,P:76,id:8477452},
-        {n:"Марк-Эдуар Власик",p:"D",O:54,D:76,P:74,id:8471736},{n:"Зак Богосян",p:"D",O:52,D:72,P:75,id:8471733},
-        {n:"Крис Дриджер",p:"G",O:43,D:66,P:64,SV:73,id:8476908}
+        {n:"Баркли Гудроу",p:"F",O:58,D:62,P:70},{n:"Мэтт Мартин",p:"F",O:55,D:60,P:78},
+        {n:"Люк Гленденинг",p:"F",O:54,D:68,P:65},{n:"Райан Ривз",p:"F",O:50,D:58,P:85},
+        {n:"Дерек Форборт",p:"D",O:52,D:72,P:74},{n:"Джош Браун",p:"D",O:48,D:65,P:76},
+        {n:"Ник Силер",p:"D",O:46,D:70,P:72},{n:"Джейкоб Миддлтон",p:"D",O:50,D:68,P:74},
+        {n:"Кейси Десмит",p:"G",O:40,D:68,P:60,SV:72},{n:"Кевин Ланкинен",p:"G",O:42,D:66,P:62,SV:74},
+        {n:"Майкл Амадио",p:"F",O:56,D:60,P:68},{n:"Ник Казинс",p:"F",O:57,D:61,P:66},
+        {n:"Зак Сэнфорд",p:"F",O:55,D:59,P:69},{n:"Джош Андерсон",p:"F",O:60,D:63,P:80},
+        {n:"Тайлер Мотт",p:"F",O:52,D:65,P:67},{n:"Мэтт Руни",p:"F",O:53,D:64,P:71},
+        {n:"Джейк Лещишин",p:"F",O:58,D:60,P:66},{n:"Томаш Носек",p:"F",O:56,D:63,P:68},
+        {n:"Джастин Браун",p:"F",O:62,D:67,P:72},{n:"Кайл Клиффорд",p:"F",O:51,D:59,P:83},
+        {n:"Бренден Диллон",p:"D",O:54,D:74,P:76},{n:"Эрик Гудбрансон",p:"D",O:52,D:76,P:78},
+        {n:"Брэйден Макнэбб",p:"D",O:50,D:75,P:77},{n:"Яни Хаканпаа",p:"D",O:48,D:78,P:80},
+        {n:"Джоэль Эдмундсон",p:"D",O:53,D:73,P:75},{n:"Джорди Бенн",p:"D",O:49,D:71,P:73},
+        {n:"Коннор Клифтон",p:"D",O:51,D:69,P:74},{n:"Джейк Уолман",p:"D",O:56,D:68,P:70},
+        {n:"Спенсер Мартин",p:"G",O:41,D:65,P:61,SV:71},{n:"Магнус Хелльберг",p:"G",O:39,D:64,P:63,SV:70}
     ],
     silver: [
-        {n:"Брэндон Саад",p:"F",O:72,D:65,P:70,id:8475283},{n:"Джейк Дибраск",p:"F",O:74,D:62,P:68,id:8478425},
-        {n:"Адам Ларссон",p:"D",O:60,D:82,P:78,id:8476855},{n:"Фредрик Андерсен",p:"G",O:45,D:78,P:72,SV:82,id:8475883},
-        {n:"Тайлер Тоффоли",p:"F",O:76,D:64,P:72,id:8475268},{n:"Эндрю Коглиано",p:"F",O:68,D:72,P:74,id:8471729},
-        {n:"Джейми Олексяк",p:"D",O:55,D:80,P:82,id:8475798},{n:"Антти Раанта",p:"G",O:43,D:76,P:74,SV:80,id:8475208},
-        {n:"Конор Гарланд",p:"F",O:78,D:63,P:66,id:8478872},{n:"Мэтт Дамба",p:"D",O:68,D:78,P:76,id:8475393}
+        {n:"Брэндон Саад",p:"F",O:72,D:65,P:70},{n:"Джейк Дибраск",p:"F",O:74,D:62,P:68},
+        {n:"Адам Ларссон",p:"D",O:60,D:82,P:78},{n:"Фредрик Андерсен",p:"G",O:45,D:78,P:72,SV:82},
+        {n:"Тайлер Тоффоли",p:"F",O:76,D:64,P:72},{n:"Эндрю Коглиано",p:"F",O:68,D:72,P:74},
+        {n:"Джейми Олексяк",p:"D",O:55,D:80,P:82},{n:"Антти Раанта",p:"G",O:43,D:76,P:74,SV:80},
+        {n:"Конор Гарланд",p:"F",O:78,D:63,P:66},{n:"Мэтт Дамба",p:"D",O:68,D:78,P:76}
     ],
     gold: [
-        {n:"Брэйден Пойнт",p:"F",O:88,D:74,P:70,id:8478475},{n:"Чарли Макэвой",p:"D",O:78,D:88,P:76,id:8478431},
-        {n:"Юусе Сарос",p:"G",O:50,D:85,P:78,SV:90,id:8477424},{n:"Брэди Ткачук",p:"F",O:90,D:80,P:88,id:8479325},
-        {n:"Джонни Годро",p:"F",O:92,D:72,P:65,id:8476319},{n:"Ши Теодор",p:"D",O:76,D:86,P:74,id:8476881},
-        {n:"Тристан Джарри",p:"G",O:48,D:83,P:80,SV:88,id:8477464}
+        {n:"Брэйден Пойнт",p:"F",O:88,D:74,P:70},{n:"Чарли Макэвой",p:"D",O:78,D:88,P:76},
+        {n:"Юусе Сарос",p:"G",O:50,D:85,P:78,SV:90},{n:"Брэди Ткачук",p:"F",O:90,D:80,P:88},
+        {n:"Джонни Годро",p:"F",O:92,D:72,P:65},{n:"Ши Теодор",p:"D",O:76,D:86,P:74},
+        {n:"Тристан Джарри",p:"G",O:48,D:83,P:80,SV:88}
     ],
     elite: [
-        {n:"Александр Барков",p:"F",O:92,D:88,P:74,id:8477493},{n:"Виктор Хедман",p:"D",O:84,D:94,P:80,id:8475167},
-        {n:"Андрей Василевский",p:"G",O:52,D:92,P:82,SV:94,id:8476882},{n:"Мэттью Ткачук",p:"F",O:94,D:82,P:86,id:8479314},
-        {n:"Роман Йоси",p:"D",O:88,D:92,P:76,id:8475200},{n:"Коннор Хеллебак",p:"G",O:50,D:90,P:84,SV:93,id:8476945}
+        {n:"Александр Барков",p:"F",O:92,D:88,P:74},{n:"Виктор Хедман",p:"D",O:84,D:94,P:80},
+        {n:"Андрей Василевский",p:"G",O:52,D:92,P:82,SV:94},{n:"Мэттью Ткачук",p:"F",O:94,D:82,P:86},
+        {n:"Роман Йоси",p:"D",O:88,D:92,P:76},{n:"Коннор Хеллебак",p:"G",O:50,D:90,P:84,SV:93}
     ],
     legendary: [
-        {n:"Коннор Макдэвид",p:"F",O:99,D:85,P:78,id:8478402},{n:"Кейл Макар",p:"D",O:95,D:92,P:80,id:8480069},
-        {n:"Игорь Шестеркин",p:"G",O:55,D:90,P:82,SV:96,id:8478010},{n:"Нэтан Маккиннон",p:"F",O:98,D:88,P:82,id:8477492},
-        {n:"Леон Драйзайтль",p:"F",O:97,D:86,P:84,id:8476474},{n:"Кирилл Капризов",p:"F",O:96,D:80,P:76,id:8478365}
+        {n:"Коннор Макдэвид",p:"F",O:99,D:85,P:78},{n:"Кейл Макар",p:"D",O:95,D:92,P:80},
+        {n:"Игорь Шестеркин",p:"G",O:55,D:90,P:82,SV:96},{n:"Нэтан Маккиннон",p:"F",O:98,D:88,P:82},
+        {n:"Леон Драйзайтль",p:"F",O:97,D:86,P:84},{n:"Кирилл Капризов",p:"F",O:96,D:80,P:76}
     ]
 };
+const poolAccess = {1:['common'],2:['common','silver'],3:['common','silver','gold'],4:['common','silver','gold','elite'],5:['common','silver','gold','elite','legendary']};
 
-// Конвертация в полный объект карты
-function makeCard(base) {
+// Игровое состояние
+let userData = { level:1, wins:0, coins:1000, cards:[], team:{forwards:[],defense:[],goalie:null}, lastDaily:null, streak:0 };
+
+// Создание карты (с аватаром)
+function createCard(base) {
     return {
-        name: base.n, pos: base.p, O: base.O, D: base.D, P: base.P,
-        SV: base.SV || 0, id: base.id,
-        photo: nhlPhoto(base.id), avatar: genAvatar(base.n, base.p)
+        name: base.n, pos: base.p,
+        O: base.O, D: base.D, P: base.P, SV: base.SV || 0,
+        avatar: genAvatar(base.n, base.p)
     };
 }
 
-// Доступность пулов по уровню
-const poolKeys = {1:['common'],2:['common','silver'],3:['common','silver','gold'],4:['common','silver','gold','elite'],5:['common','silver','gold','elite','legendary']};
-
-// Состояние пользователя
-let userData = {
-    level:1, wins:0, coins:1000, cards:[],
-    team:{forwards:[],defense:[],goalie:null},
-    lastDaily:null, streak:0
-};
-
-// Проверка на наличие игрока (уникальность)
-function hasPlayer(name) {
-    return userData.cards.some(c => c.name === name);
+// Удаление дубликатов при загрузке
+function removeDuplicates(cards) {
+    const seen = new Set();
+    return cards.filter(c => {
+        const key = c.name + c.pos;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
 }
 
-// Стартовый набор (уникальные)
-function giveStarterCards() {
-    const commonBase = cardPool.common;
-    let selected = [];
-    // 4 форварда
-    let f = commonBase.filter(c=>c.p==='F'); for(let i=0;i<4;i++) selected.push(f[i]);
-    // 4 защитника
-    let d = commonBase.filter(c=>c.p==='D'); for(let i=0;i<4;i++) selected.push(d[i]);
-    // 2 вратаря
-    let g = commonBase.filter(c=>c.p==='G'); for(let i=0;i<2;i++) selected.push(g[i]);
-    selected.forEach(b => userData.cards.push(makeCard(b)));
-}
-
+// Загрузка данных с очисткой дубликатов
 async function loadUserData() {
     let saved = await cloud.getItem('nhl_save');
     if (saved) {
-        try { Object.assign(userData, JSON.parse(saved)); } catch(e){ resetData(); giveStarterCards(); }
+        try {
+            let parsed = JSON.parse(saved);
+            // восстанавливаем методы аватара (если нет – генерируем)
+            parsed.cards = parsed.cards.map(c => {
+                if (!c.avatar) c.avatar = genAvatar(c.name, c.pos);
+                return c;
+            });
+            // удаляем дубликаты
+            parsed.cards = removeDuplicates(parsed.cards);
+            Object.assign(userData, parsed);
+        } catch(e) {
+            resetData();
+        }
     } else {
-        resetData(); giveStarterCards(); await saveUserData();
+        resetData();
     }
+    // если карт меньше стартового набора – докидываем стартовые (но без дубликатов)
+    if (userData.cards.length < 10) {
+        giveStarterCards();
+    }
+    await saveUserData();
     checkDailyReset();
 }
-async function saveUserData() { await cloud.setItem('nhl_save', JSON.stringify(userData)); }
+
+async function saveUserData() {
+    await cloud.setItem('nhl_save', JSON.stringify(userData));
+}
+
 function resetData() {
-    userData = {level:1,wins:0,coins:1000,cards:[],team:{forwards:[],defense:[],goalie:null},lastDaily:null,streak:0};
+    userData = { level:1, wins:0, coins:1000, cards:[], team:{forwards:[],defense:[],goalie:null}, lastDaily:null, streak:0 };
+    giveStarterCards();
 }
 
-// Ежедневный бонус
-function checkDailyReset() {
-    let today = new Date().toDateString();
-    if (userData.lastDaily !== today) {
-        if (userData.lastDaily) {
-            let diff = (new Date() - new Date(userData.lastDaily))/86400000;
-            userData.streak = (diff>=1 && diff<2) ? userData.streak+1 : 1;
-        } else userData.streak = 1;
-        userData.lastDaily = today;
-        saveUserData();
+function giveStarterCards() {
+    const commonBase = cardPool.common;
+    const needed = [
+        ...commonBase.filter(c=>c.p==='F').slice(0,4),
+        ...commonBase.filter(c=>c.p==='D').slice(0,4),
+        ...commonBase.filter(c=>c.p==='G').slice(0,2)
+    ];
+    for (let b of needed) {
+        if (!userData.cards.some(c => c.name === b.n && c.pos === b.p)) {
+            userData.cards.push(createCard(b));
+        }
     }
-    updateUI();
 }
 
-// Бустер (только уникальные)
+// Ежедневный бустер (уникальные карты, без повторов)
 function openBooster() {
     let today = new Date().toDateString();
-    if (userData.lastDaily === today) { tg.showPopup({title:'⏳', message:'Уже получен'}); return; }
-    let poolNames = poolKeys[userData.level];
+    if (userData.lastDaily === today) {
+        tg.showPopup({title:'⏳', message:'Бустер уже получен'}); return;
+    }
+    let poolNames = poolAccess[userData.level];
     let pool = poolNames[poolNames.length-1];
     if (userData.streak >= 7 && userData.level<5) {
-        let next = poolKeys[userData.level+1];
+        let next = poolAccess[userData.level+1];
         if (next) pool = next[next.length-1];
     }
-    let basePool = cardPool[pool];
+    let baseCards = cardPool[pool];
     let newCards = [];
     let coinsGain = 0;
-    // Пытаемся набрать 3 уникальные карты
     let attempts = 0;
-    while (newCards.length < 3 && attempts < 50) {
-        let base = basePool[Math.floor(Math.random()*basePool.length)];
-        if (!hasPlayer(base.n)) {
-            let card = makeCard(base);
+    while (newCards.length < 3 && attempts < 100) {
+        let base = baseCards[Math.floor(Math.random()*baseCards.length)];
+        if (!userData.cards.some(c => c.name === base.n && c.pos === base.p)) {
+            let card = createCard(base);
             newCards.push(card);
             userData.cards.push(card);
         } else {
-            coinsGain += 500; // монеты за дубликат
+            coinsGain += 500;
         }
         attempts++;
     }
     userData.lastDaily = today;
     if (userData.streak >= 7) userData.streak = 0;
     userData.coins += coinsGain;
-    saveUserData(); updateUI();
+    saveUserData();
+    updateUI();
     let msg = newCards.length>0 ? newCards.map(c=>c.name).join(', ') : 'Все известны';
     if (coinsGain) msg += ` (+${coinsGain} монет)`;
-    tg.showPopup({title:'🎁 Бустер', message:msg});
+    tg.showPopup({title:'🎁 Бустер', message: msg});
 }
 
-// ========== НОВЫЙ МАТЧ С ГАРАНТИРОВАННЫМИ ГОЛАМИ ==========
+// ========== НОВАЯ МЕХАНИКА МАТЧА (10 атак) ==========
 async function startMatch() {
     let t = userData.team;
     if (t.forwards.length!==3 || t.defense.length!==2 || !t.goalie) {
-        tg.showAlert('Состав неполный'); return;
+        tg.showAlert('Соберите состав'); return;
     }
     showScreen('matchScreen');
     let scoreDiv = document.getElementById('matchScoreDisplay');
@@ -293,52 +295,63 @@ async function startMatch() {
 
     let ai = generateAITeam();
     let userScore = 0, aiScore = 0;
-    scoreDiv.innerText = `0 : 0`;
+    scoreDiv.innerText = '0 : 0';
 
-    for (let period=1; period<=3; period++) {
-        logDiv.innerText = `--- Период ${period} ---`;
-        let userWins = 0, aiWins = 0;
-        for (let i=0; i<5; i++) {
-            let u = [...t.forwards, ...t.defense][Math.floor(Math.random()*5)];
-            let a = [...ai.forwards, ...ai.defense][Math.floor(Math.random()*5)];
-            // Показываем карты
-            duelDiv.innerHTML = `
-                <div class="duel-card"><img src="${u.photo}" onerror="this.src='${u.avatar}'"><div class="name">${u.name}</div><div class="stats"><span class="stat-o">O:${u.O}</span> <span class="stat-d">D:${u.D}</span> <span class="stat-p">P:${u.P}</span></div></div>
-                <div class="vs-text">VS</div>
-                <div class="duel-card"><img src="${a.photo}" onerror="this.src='${a.avatar}'"><div class="name">${a.name}</div><div class="stats"><span class="stat-o">O:${a.O}</span> <span class="stat-d">D:${a.D}</span> <span class="stat-p">P:${a.P}</span></div></div>`;
-            await sleep(1200);
+    for (let attack = 1; attack <= 10; attack++) {
+        // Атакует всегда игрок, а AI защищается
+        let uF = t.forwards[Math.floor(Math.random()*t.forwards.length)];
+        let aD = ai.defense[Math.floor(Math.random()*ai.defense.length)];
 
-            let uRoll = Math.floor(Math.random()*6)+1;
-            let aRoll = Math.floor(Math.random()*6)+1;
-            let eventText = '';
+        // Показываем карты: нападающий vs защитник
+        duelDiv.innerHTML = `
+            <div class="duel-card"><div class="avatar"><img src="${uF.avatar}" width="70" height="70" style="border-radius:50%;"></div><div class="name">${uF.name}</div></div>
+            <div class="vs-text">VS</div>
+            <div class="duel-card"><div class="avatar"><img src="${aD.avatar}" width="70" height="70" style="border-radius:50%;"></div><div class="name">${aD.name}</div></div>`;
+        await sleep(1200);
 
-            if (u.O + uRoll > a.D + aRoll) {
-                userWins++;
-                // вратарь может спасти
-                if (Math.floor(Math.random()*6)+1 <= 3) {
-                    userScore++;
-                    eventText = `🚨 ГОЛ! ${u.name} пробил ${ai.goalie.name}`;
-                } else {
-                    eventText = `🛑 Сейв ${ai.goalie.name} после броска ${u.name}`;
-                }
-            } else if (a.O + aRoll > u.D + uRoll) {
-                aiWins++;
-                if (Math.floor(Math.random()*6)+1 <= 3) {
-                    aiScore++;
-                    eventText = `😞 Гол ${a.name} в ворота ${t.goalie.name}`;
-                } else {
-                    eventText = `🧤 Сейв ${t.goalie.name} после ${a.name}`;
-                }
+        let attackRoll = uF.O + Math.floor(Math.random()*6)+1;
+        let defenseRoll = aD.D + Math.floor(Math.random()*6)+1;
+        if (attackRoll > defenseRoll) {
+            // Пробили защиту – бросок по вратарю
+            let shot = uF.O + Math.floor(Math.random()*6)+1;
+            if (shot > ai.goalie.SV + 2) {
+                userScore++;
+                logDiv.innerText = `🚨 ГОЛ! ${uF.name} пробил ${ai.goalie.name} (счёт ${userScore}:${aiScore})`;
             } else {
-                eventText = `⚡ Борьба без гола`;
+                logDiv.innerText = `🛑 Сейв ${ai.goalie.name} после броска ${uF.name}`;
             }
-            logDiv.innerText = eventText;
-            scoreDiv.innerText = `${userScore} : ${aiScore}`;
-            await sleep(1200);
+        } else {
+            logDiv.innerText = `❌ ${aD.name} заблокировал бросок ${uF.name}`;
         }
-        logDiv.innerText = userWins>aiWins ? `✅ Период ${period} ваш` : (aiWins>userWins ? `❌ Период за AI` : `🤝 Ничья`);
+        scoreDiv.innerText = `${userScore} : ${aiScore}`;
+        await sleep(800);
+
+        // Атака AI (ответка)
+        let aF = ai.forwards[Math.floor(Math.random()*ai.forwards.length)];
+        let uD = t.defense[Math.floor(Math.random()*t.defense.length)];
+        duelDiv.innerHTML = `
+            <div class="duel-card"><div class="avatar"><img src="${aF.avatar}" width="70" height="70" style="border-radius:50%;"></div><div class="name">${aF.name}</div></div>
+            <div class="vs-text">VS</div>
+            <div class="duel-card"><div class="avatar"><img src="${uD.avatar}" width="70" height="70" style="border-radius:50%;"></div><div class="name">${uD.name}</div></div>`;
+        await sleep(1200);
+
+        let aiAttack = aF.O + Math.floor(Math.random()*6)+1;
+        let userDefense = uD.D + Math.floor(Math.random()*6)+1;
+        if (aiAttack > userDefense) {
+            let shot = aF.O + Math.floor(Math.random()*6)+1;
+            if (shot > t.goalie.SV + 2) {
+                aiScore++;
+                logDiv.innerText = `😞 Гол ${aF.name} в ворота ${t.goalie.name} (счёт ${userScore}:${aiScore})`;
+            } else {
+                logDiv.innerText = `🧤 Сейв ${t.goalie.name} после ${aF.name}`;
+            }
+        } else {
+            logDiv.innerText = `🛡️ ${uD.name} остановил атаку ${aF.name}`;
+        }
+        scoreDiv.innerText = `${userScore} : ${aiScore}`;
         await sleep(800);
     }
+
     let reward = userScore>aiScore ? 200 : (userScore<aiScore ? 80 : 120);
     if (userScore>aiScore) { userData.wins++; if (userData.wins >= userData.level*100) userData.level++; }
     userData.coins += reward;
@@ -349,31 +362,42 @@ async function startMatch() {
 
 function generateAITeam() {
     let level = userData.level;
-    let pools = poolKeys[level];
-    let allBases = pools.flatMap(p => cardPool[p]);
-    let cards = allBases.map(makeCard);
-    let f = cards.filter(c=>c.pos==='F').sort(()=>Math.random()-0.5).slice(0,3);
-    let d = cards.filter(c=>c.pos==='D').sort(()=>Math.random()-0.5).slice(0,2);
-    let g = cards.filter(c=>c.pos==='G').sort(()=>Math.random()-0.5)[0];
-    return {forwards:f, defense:d, goalie:g};
+    let pools = poolAccess[level];
+    let allBase = pools.flatMap(p => cardPool[p]);
+    let cards = allBase.map(createCard);
+    return {
+        forwards: cards.filter(c=>c.pos==='F').slice(0,3),
+        defense: cards.filter(c=>c.pos==='D').slice(0,2),
+        goalie: cards.filter(c=>c.pos==='G')[0]
+    };
 }
 
 function exitMatch() { showScreen('mainScreen'); updateUI(); }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// ========== Состав ==========
+// Сброс прогресса
+async function resetProgress() {
+    await cloud.removeItem('nhl_save');
+    resetData();
+    userData.lastDaily = null; // чтобы бустер снова доступен
+    await saveUserData();
+    updateUI();
+    tg.showAlert('Прогресс сброшен. Начните заново!');
+}
+
+// Состав и интерфейс (прежние функции, с учётом уникальности)
 function togglePlayer(card) {
     let t = userData.team;
     if (card.pos==='F') {
         let idx = t.forwards.findIndex(c=>c.name===card.name);
         if (idx>=0) t.forwards.splice(idx,1);
         else if (t.forwards.length<3) t.forwards.push(card);
-        else { tg.showAlert('Макс. 3 форварда'); return; }
+        else { tg.showAlert('Макс. 3'); return; }
     } else if (card.pos==='D') {
         let idx = t.defense.findIndex(c=>c.name===card.name);
         if (idx>=0) t.defense.splice(idx,1);
         else if (t.defense.length<2) t.defense.push(card);
-        else { tg.showAlert('Макс. 2 защитника'); return; }
+        else { tg.showAlert('Макс. 2'); return; }
     } else if (card.pos==='G') {
         t.goalie = (t.goalie?.name===card.name) ? null : card;
     }
@@ -392,8 +416,6 @@ function updateTeamPreview() {
         prev.innerHTML = `⚡ Состав: ${t.forwards.map(c=>c.name).join(', ')} / ${t.defense.map(c=>c.name).join(', ')} / 🥅 ${t.goalie.name}`;
     } else prev.innerHTML = '⚠️ Состав неполный';
 }
-
-// Отрисовка коллекции
 function renderCollection() {
     let cont = document.getElementById('collectionContainer');
     cont.innerHTML = '';
@@ -405,7 +427,7 @@ function renderCollection() {
         let list = group.querySelector('.card-list');
         cards.forEach(c => {
             let div = document.createElement('div'); div.className='card-item';
-            div.innerHTML = `<img src="${c.photo}" onerror="this.src='${c.avatar}'"><div class="name">${c.name}</div><div class="stats"><span class="stat-o">O:${c.O}</span> <span class="stat-d">D:${c.D}</span> <span class="stat-p">P:${c.P}</span></div>`;
+            div.innerHTML = `<div class="avatar"><img src="${c.avatar}" width="64" height="64" style="border-radius:50%;"></div><div class="name">${c.name}</div><div class="stats"><span class="stat-o">O:${c.O}</span> <span class="stat-d">D:${c.D}</span> <span class="stat-p">P:${c.P}</span></div>`;
             list.appendChild(div);
         });
         cont.appendChild(group);
@@ -422,7 +444,7 @@ function renderTeamSelection() {
         let list = group.querySelector('.card-list');
         cards.forEach(c => {
             let div = document.createElement('div'); div.className='card-item';
-            div.innerHTML = `<img src="${c.photo}" onerror="this.src='${c.avatar}'"><div class="name">${c.name}</div><div class="stats"><span class="stat-o">O:${c.O}</span> <span class="stat-d">D:${c.D}</span> <span class="stat-p">P:${c.P}</span></div>`;
+            div.innerHTML = `<div class="avatar"><img src="${c.avatar}" width="64" height="64" style="border-radius:50%;"></div><div class="name">${c.name}</div><div class="stats"><span class="stat-o">O:${c.O}</span> <span class="stat-d">D:${c.D}</span> <span class="stat-p">P:${c.P}</span></div>`;
             div.onclick = () => togglePlayer(c);
             list.appendChild(div);
         });
@@ -430,7 +452,6 @@ function renderTeamSelection() {
     });
     displaySelectedTeam();
 }
-
 function updateUI() {
     document.getElementById('userLevel').innerText = userData.level;
     document.getElementById('winsCount').innerText = userData.wins;
@@ -448,12 +469,25 @@ function updateUI() {
     } else timer.innerText = '🎁 Бустер доступен!';
     renderCollection();
 }
-
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     if (id==='teamScreen') renderTeamSelection();
     if (id==='mainScreen' || id==='collectionScreen') updateUI();
+}
+
+// Проверка daily при старте
+function checkDailyReset() {
+    let today = new Date().toDateString();
+    if (userData.lastDaily !== today) {
+        if (userData.lastDaily) {
+            let diff = (new Date() - new Date(userData.lastDaily))/86400000;
+            userData.streak = (diff>=1 && diff<2) ? userData.streak+1 : 1;
+        } else userData.streak = 1;
+        userData.lastDaily = today;
+        saveUserData();
+    }
+    updateUI();
 }
 
 loadUserData().then(() => { updateUI(); setInterval(updateUI, 60000); });
