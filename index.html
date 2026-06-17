@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+    <title>NHL Card Battle</title>
+    <!-- Подключение Telegram Web App API -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --tg-theme-bg: #ffffff;
+            --tg-theme-text: #000000;
+            --tg-theme-button: #2AABEE;
+            --tg-theme-button-text: #ffffff;
+            --tg-theme-secondary-bg: #f4f4f4;
+            color-scheme: light;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: var(--tg-theme-bg);
+            color: var(--tg-theme-text);
+            padding: 12px;
+            min-height: 100vh;
+            transition: background 0.3s;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        h1, h2 { font-weight: 600; margin-bottom: 8px; }
+        .btn {
+            background: var(--tg-theme-button);
+            color: var(--tg-theme-button-text);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            display: inline-block;
+            text-align: center;
+            margin: 4px;
+        }
+        .btn:active { opacity: 0.7; }
+        .btn.secondary {
+            background: var(--tg-theme-secondary-bg);
+            color: var(--tg-theme-text);
+        }
+        .card-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .card-item {
+            background: var(--tg-theme-secondary-bg);
+            border-radius: 12px;
+            padding: 8px;
+            width: calc(33% - 8px);
+            min-width: 100px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .card-item img {
+            width: 60px; height: 60px; border-radius: 50%; object-fit: cover; background: #ccc;
+        }
+        .card-item .name { font-weight: 600; font-size: 14px; margin-top: 4px; }
+        .card-item .stats { font-size: 12px; }
+        .rarity-badge {
+            position: absolute; top: 4px; right: 4px;
+            background: gold; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px;
+        }
+        .team-slot {
+            display: flex; justify-content: space-between; align-items: center; margin: 4px 0;
+        }
+        .match-log {
+            background: #111; color: #0f0; font-family: monospace; padding: 8px; border-radius: 8px; height: 150px;
+            overflow-y: auto; margin: 12px 0; font-size: 13px;
+        }
+        .streak-badge { background: gold; color: black; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<!-- Главный экран -->
+<div id="mainScreen" class="screen active">
+    <h1>🏒 NHL Card Battle</h1>
+    <p id="greeting">Привет, менеджер!</p>
+    <div style="margin:8px 0">Уровень: <strong id="userLevel">1</strong> | Побед: <strong id="winsCount">0</strong>/100</div>
+    <div>Монеты: <strong id="coinsDisplay">0</strong> 🪙</div>
+    <div style="margin:8px 0">
+        <span id="streakDisplay" class="streak-badge">Дней подряд: 1</span>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:16px;">
+        <button class="btn" onclick="openBooster()">🎁 Бустер (беспл. 1/день)</button>
+        <button class="btn secondary" onclick="showScreen('collectionScreen')">📦 Коллекция</button>
+        <button class="btn secondary" onclick="showScreen('teamScreen')">👥 Состав</button>
+        <button class="btn secondary" onclick="startMatch()">⚔️ Матч (30 сек)</button>
+    </div>
+    <div id="dailyTimer" style="margin-top:12px; font-size:14px;"></div>
+</div>
+
+<!-- Экран коллекции -->
+<div id="collectionScreen" class="screen">
+    <h2>📦 Ваши карты</h2>
+    <div id="collectionContainer" class="card-list"></div>
+    <button class="btn" onclick="showScreen('mainScreen')">⬅️ Назад</button>
+</div>
+
+<!-- Экран состава -->
+<div id="teamScreen" class="screen">
+    <h2>👥 Состав на матч</h2>
+    <p>Выберите 3 нападающих, 2 защитников, 1 вратаря.</p>
+    <div id="rosterSelection" style="margin:12px 0;"></div>
+    <div id="selectedTeamDisplay" style="margin:12px 0; background:var(--tg-theme-secondary-bg); padding:8px; border-radius:8px;">
+        <strong>Текущий состав:</strong>
+        <div id="forwardsList">Нап: не выбраны</div>
+        <div id="defenseList">Защ: не выбраны</div>
+        <div id="goalieList">Вр: не выбран</div>
+    </div>
+    <button class="btn" onclick="saveTeam()">💾 Сохранить состав</button>
+    <button class="btn secondary" onclick="showScreen('mainScreen')">⬅️ Назад</button>
+</div>
+
+<!-- Экран матча -->
+<div id="matchScreen" class="screen">
+    <h2>⚔️ Матч против AI</h2>
+    <div class="match-log" id="matchLog"></div>
+    <div id="matchResult" style="font-weight:bold; margin:8px 0;"></div>
+    <button class="btn" onclick="showScreen('mainScreen'); checkDailyReset();">✅ Завершить</button>
+</div>
+
+<script>
+// ================== ИГРОВЫЕ ДАННЫЕ ==================
+let tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+// Инициализация CloudStorage
+const cloud = {
+    async get(key) {
+        return new Promise((resolve) => {
+            tg.CloudStorage.getItem(key, (err, val) => {
+                if (err || !val) resolve(null);
+                else resolve(val);
+            });
+        });
+    },
+    async set(key, value) {
+        return new Promise((resolve) => {
+            tg.CloudStorage.setItem(key, value, (err) => {
+                if (err) console.error(err);
+                resolve();
+            });
+        });
+    }
+};
+
+// База карт (реальные игроки НХЛ, разделение по пулам)
+const cardPool = {
+    common: [
+        { name: "Баркли Гудроу", pos: "F", O: 58, D: 62, P: 70, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8479350.jpg" },
+        { name: "Мэтт Мартин", pos: "F", O: 55, D: 60, P: 78, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8471742.jpg" },
+        { name: "Люк Гленденинг", pos: "F", O: 54, D: 68, P: 65, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8475189.jpg" },
+        { name: "Райан Ривз", pos: "F", O: 50, D: 58, P: 85, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8471815.jpg" },
+        { name: "Дерек Форборт", pos: "D", O: 52, D: 72, P: 74, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8477428.jpg" },
+        { name: "Джош Браун", pos: "D", O: 48, D: 65, P: 76, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8478463.jpg" },
+        { name: "Кейси Десмит", pos: "G", O: 40, D: 68, P: 60, SV: 72, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8477463.jpg" }
+    ],
+    silver: [
+        { name: "Брэндон Саад", pos: "F", O: 72, D: 65, P: 70, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8475283.jpg" },
+        { name: "Джейк Дибраск", pos: "F", O: 74, D: 62, P: 68, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8478425.jpg" },
+        { name: "Адам Ларссон", pos: "D", O: 60, D: 82, P: 78, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8476855.jpg" },
+        { name: "Фредрик Андерсен", pos: "G", O: 45, D: 78, P: 72, SV: 82, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8475883.jpg" }
+    ],
+    gold: [
+        { name: "Брэйден Пойнт", pos: "F", O: 88, D: 74, P: 70, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8478475.jpg" },
+        { name: "Чарли Макэвой", pos: "D", O: 78, D: 88, P: 76, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8478431.jpg" },
+        { name: "Юусе Сарос", pos: "G", O: 50, D: 85, P: 78, SV: 90, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8477424.jpg" }
+    ],
+    elite: [
+        { name: "Александр Барков", pos: "F", O: 92, D: 88, P: 74, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8477493.jpg" },
+        { name: "Виктор Хедман", pos: "D", O: 84, D: 94, P: 80, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8475167.jpg" },
+        { name: "Андрей Василевский", pos: "G", O: 52, D: 92, P: 82, SV: 94, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8476882.jpg" }
+    ],
+    legendary: [
+        { name: "Коннор Макдэвид", pos: "F", O: 99, D: 85, P: 78, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8478402.jpg" },
+        { name: "Кейл Макар", pos: "D", O: 95, D: 92, P: 80, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8480069.jpg" },
+        { name: "Игорь Шестеркин", pos: "G", O: 55, D: 90, P: 82, SV: 96, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8478010.jpg" }
+    ]
+};
+
+// Доступность пулов по уровню
+const poolAccess = {1: ['common'], 2: ['common','silver'], 3: ['common','silver','gold'], 4: ['common','silver','gold','elite'], 5: ['common','silver','gold','elite','legendary']};
+const poolPrices = {common: 500, silver: 1200, gold: 2500, elite: 5000, legendary: 10000};
+
+let userData = {
+    level: 1,
+    wins: 0,
+    coins: 1000,
+    cards: [],
+    team: { forwards: [], defense: [], goalie: null },
+    lastDaily: null,
+    streak: 0
+};
+
+// ================== ЗАГРУЗКА / СОХРАНЕНИЕ ==================
+async function loadUserData() {
+    let saved = await cloud.get('nhl_save');
+    if (saved) {
+        try {
+            let parsed = JSON.parse(saved);
+            Object.assign(userData, parsed);
+        } catch(e) { resetData(); }
+    } else {
+        // Если первый запуск, даём стартовый набор
+        resetData();
+        giveStarterCards();
+        await saveUserData();
+    }
+    checkDailyReset();
+}
+
+async function saveUserData() {
+    await cloud.set('nhl_save', JSON.stringify(userData));
+}
+
+function resetData() {
+    userData.level = 1;
+    userData.wins = 0;
+    userData.coins = 1000;
+    userData.cards = [];
+    userData.team = { forwards: [], defense: [], goalie: null };
+    userData.lastDaily = null;
+    userData.streak = 0;
+}
+
+function giveStarterCards() {
+    // Даём 10 общих карт + 1 вратаря
+    for(let i=0; i<10; i++) {
+        let card = cardPool.common[Math.floor(Math.random() * cardPool.common.length)];
+        userData.cards.push({...card, id: Date.now()+i});
+    }
+    // гарантированный вратарь
+    let goalie = cardPool.common.filter(c=>c.pos==='G')[0];
+    userData.cards.push({...goalie, id: Date.now()+100});
+}
+
+// ================== ЕЖЕДНЕВНЫЙ БОНУС ==================
+function checkDailyReset() {
+    let today = new Date().toDateString();
+    if (userData.lastDaily !== today) {
+        // новый день
+        if (userData.lastDaily) {
+            let last = new Date(userData.lastDaily);
+            let diff = (new Date() - last) / (1000*60*60*24);
+            if (diff >= 1 && diff < 2) {
+                userData.streak++;
+            } else {
+                userData.streak = 1;
+            }
+        } else {
+            userData.streak = 1;
+        }
+        userData.lastDaily = today;
+        saveUserData();
+    }
+    updateUI();
+}
+
+function getNextDailyTime() {
+    let now = new Date();
+    let tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
+    return tomorrow - now;
+}
+
+// ================== БУСТЕРЫ ==================
+function openBooster() {
+    let today = new Date().toDateString();
+    if (userData.lastDaily === today) {
+        tg.showPopup({title:'Подождите', message:'Бесплатный бустер уже получен сегодня. Приходите завтра!'});
+        return;
+    }
+    // Бесплатный бустер текущего уровня
+    let availablePools = poolAccess[userData.level];
+    let pool = availablePools[availablePools.length-1]; // максимальный доступный
+    // если streak >= 7, даём бустер уровнем выше
+    if (userData.streak >= 7) {
+        let nextLevel = userData.level + 1;
+        if (nextLevel <= 5 && poolAccess[nextLevel]) {
+            let higherPools = poolAccess[nextLevel];
+            pool = higherPools[higherPools.length-1];
+        }
+    }
+    let newCards = [];
+    for (let i=0; i<3; i++) {
+        let card = getRandomCardFromPool(pool);
+        newCards.push({...card, id: Date.now()+i});
+    }
+    userData.cards.push(...newCards);
+    userData.lastDaily = new Date().toDateString();
+    if (userData.streak >= 7) userData.streak = 0; // сброс после бонуса 7 дня
+    saveUserData();
+    updateUI();
+    let cardNames = newCards.map(c => c.name).join(', ');
+    tg.showPopup({title:'🎁 Бустер открыт!', message: `Вы получили: ${cardNames}`});
+}
+
+function getRandomCardFromPool(poolName) {
+    let pool = cardPool[poolName];
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ================== МАТЧ ==================
+async function startMatch() {
+    let team = userData.team;
+    if (team.forwards.length < 3 || team.defense.length < 2 || !team.goalie) {
+        tg.showAlert('Сначала соберите состав (3 нап., 2 защ., 1 вратарь)');
+        return;
+    }
+    showScreen('matchScreen');
+    let log = document.getElementById('matchLog');
+    let resultDiv = document.getElementById('matchResult');
+    log.innerHTML = '';
+    resultDiv.innerHTML = '';
+
+    // Генерация команды AI на основе уровня игрока
+    let aiTeam = generateAITeam(userData.level);
+
+    let userScore = 0;
+    let aiScore = 0;
+
+    for (let period=1; period<=3; period++) {
+        log.innerHTML += `<br><b>--- Период ${period} ---</b><br>`;
+        let userPeriodWins = 0;
+        let aiPeriodWins = 0;
+        for (let duel=0; duel<5; duel++) {
+            // случайная пара
+            let userPlayer = getRandomFromArray([...team.forwards, ...team.defense]);
+            let aiPlayer = getRandomFromArray([...aiTeam.forwards, ...aiTeam.defense]);
+            // бросок кубика
+            let userRoll = Math.floor(Math.random()*6)+1;
+            let aiRoll = Math.floor(Math.random()*6)+1;
+            // определяем атакующего (упрощённо: у кого атака выше)
+            let userAttack = userPlayer.O + userRoll;
+            let aiDefense = aiPlayer.D + aiRoll;
+            let winner = null;
+            if (userAttack > aiDefense) {
+                // user атакует успешно, бросок по воротам ai
+                let goalie = aiTeam.goalie;
+                let shotRoll = Math.floor(Math.random()*6)+1;
+                let goalieRoll = Math.floor(Math.random()*6)+1;
+                let shotPower = userPlayer.O + shotRoll;
+                let savePower = goalie.SV + goalieRoll;
+                if (shotPower > savePower) {
+                    // гол!
+                    userPeriodWins++;
+                    log.innerHTML += `🚨 ГОЛ! ${userPlayer.name} пробивает ${goalie.name}.<br>`;
+                } else {
+                    log.innerHTML += `🛑 Сейв ${goalie.name} после броска ${userPlayer.name}.<br>`;
+                }
+            } else if (aiPlayer.O + aiRoll > userPlayer.D + userRoll) {
+                // ai атакует
+                let goalie = team.goalie;
+                let shotRoll = Math.floor(Math.random()*6)+1;
+                let goalieRoll = Math.floor(Math.random()*6)+1;
+                let shotPower = aiPlayer.O + shotRoll;
+                let savePower = goalie.SV + goalieRoll;
+                if (shotPower > savePower) {
+                    aiPeriodWins++;
+                    log.innerHTML += `😞 Пропущен гол! ${aiPlayer.name} обыграл ${goalie.name}.<br>`;
+                } else {
+                    log.innerHTML += `🧤 ${goalie.name} спасает после ${aiPlayer.name}.<br>`;
+                }
+            } else {
+                log.innerHTML += `⚔️ Ничья в微型-дуэли ${userPlayer.name} vs ${aiPlayer.name}.<br>`;
+            }
+            await sleep(600); // небольшая задержка для эффекта
+        }
+        // определяем победителя периода
+        if (userPeriodWins > aiPeriodWins) {
+            userScore++;
+            log.innerHTML += `✅ Период ${period} ваш!<br>`;
+        } else if (aiPeriodWins > userPeriodWins) {
+            aiScore++;
+            log.innerHTML += `❌ Период ${period} за AI.<br>`;
+        } else {
+            log.innerHTML += `🤝 Период ${period} ничья.<br>`;
+        }
+    }
+
+    // Результат матча
+    let coinsEarned = 0;
+    let won = false;
+    if (userScore > aiScore) {
+        won = true;
+        coinsEarned = 200;
+        resultDiv.innerHTML = `🏆 Победа! Счёт ${userScore}:${aiScore}. +200 монет.`;
+        userData.wins++;
+        if (userData.wins >= userData.level * 100) {
+            userData.level++;
+            tg.showAlert('🎉 Поздравляем! Вы достигли уровня '+userData.level+'!');
+        }
+    } else if (userScore < aiScore) {
+        coinsEarned = 80;
+        resultDiv.innerHTML = `😔 Поражение ${userScore}:${aiScore}. +80 монет.`;
+    } else {
+        coinsEarned = 120;
+        resultDiv.innerHTML = `🤝 Ничья ${userScore}:${aiScore}. +120 монет.`;
+    }
+    userData.coins += coinsEarned;
+    await saveUserData();
+    updateUI();
+}
+
+function generateAITeam(level) {
+    let pools = poolAccess[level];
+    let aiCards = [];
+    for (let p of pools) {
+        aiCards.push(...cardPool[p]);
+    }
+    // Выбрать случайных 3F, 2D, 1G
+    let forwards = aiCards.filter(c=>c.pos==='F').sort(()=>Math.random()-0.5).slice(0,3);
+    let defense = aiCards.filter(c=>c.pos==='D').sort(()=>Math.random()-0.5).slice(0,2);
+    let goalies = aiCards.filter(c=>c.pos==='G').sort(()=>Math.random()-0.5).slice(0,1);
+    return {
+        forwards, defense, goalie: goalies[0]
+    };
+}
+
+function getRandomFromArray(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+// ================== СОСТАВ ==================
+function renderTeamSelection() {
+    let container = document.getElementById('rosterSelection');
+    container.innerHTML = '<p>Нажмите на карту, чтобы добавить/убрать из состава.</p>';
+    let allCards = userData.cards;
+    allCards.forEach(card => {
+        let div = document.createElement('div');
+        div.className = 'card-item';
+        div.innerHTML = `<img src="${card.img}" onerror="this.src='https://via.placeholder.com/60'"><div class="name">${card.name}</div><div class="stats">O:${card.O} D:${card.D} P:${card.P}</div>`;
+        div.onclick = () => togglePlayer(card);
+        container.appendChild(div);
+    });
+    displaySelectedTeam();
+}
+
+function togglePlayer(card) {
+    let team = userData.team;
+    if (card.pos === 'F') {
+        if (team.forwards.find(c=>c.id===card.id)) {
+            team.forwards = team.forwards.filter(c=>c.id!==card.id);
+        } else if (team.forwards.length < 3) {
+            team.forwards.push(card);
+        } else { tg.showAlert('Максимум 3 нападающих'); return; }
+    } else if (card.pos === 'D') {
+        if (team.defense.find(c=>c.id===card.id)) {
+            team.defense = team.defense.filter(c=>c.id!==card.id);
+        } else if (team.defense.length < 2) {
+            team.defense.push(card);
+        } else { tg.showAlert('Максимум 2 защитника'); return; }
+    } else if (card.pos === 'G') {
+        if (team.goalie && team.goalie.id === card.id) {
+            team.goalie = null;
+        } else {
+            team.goalie = card;
+        }
+    }
+    displaySelectedTeam();
+}
+
+function displaySelectedTeam() {
+    let t = userData.team;
+    document.getElementById('forwardsList').innerText = 'Нап: ' + (t.forwards.map(c=>c.name).join(', ') || 'не выбраны');
+    document.getElementById('defenseList').innerText = 'Защ: ' + (t.defense.map(c=>c.name).join(', ') || 'не выбраны');
+    document.getElementById('goalieList').innerText = 'Вр: ' + (t.goalie ? t.goalie.name : 'не выбран');
+}
+
+function saveTeam() {
+    saveUserData();
+    tg.showAlert('Состав сохранён!');
+    showScreen('mainScreen');
+}
+
+// ================== UI ==================
+function updateUI() {
+    document.getElementById('userLevel').innerText = userData.level;
+    document.getElementById('winsCount').innerText = userData.wins;
+    document.getElementById('coinsDisplay').innerText = userData.coins;
+    document.getElementById('streakDisplay').innerText = `Дней подряд: ${userData.streak}`;
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        document.getElementById('greeting').innerText = `Привет, ${tg.initDataUnsafe.user.first_name}!`;
+    }
+    // Таймер до следующего бесплатного бустера
+    let timerDiv = document.getElementById('dailyTimer');
+    if (userData.lastDaily === new Date().toDateString()) {
+        let msLeft = getNextDailyTime();
+        let hours = Math.floor(msLeft/(1000*60*60));
+        let mins = Math.floor((msLeft%(1000*60*60))/(1000*60));
+        timerDiv.innerHTML = `Бесплатный бустер будет доступен через ${hours}ч ${mins}мин.`;
+    } else {
+        timerDiv.innerHTML = 'Бесплатный бустер доступен!';
+    }
+    // Коллекция
+    let coll = document.getElementById('collectionContainer');
+    coll.innerHTML = '';
+    userData.cards.forEach(card => {
+        let div = document.createElement('div');
+        div.className = 'card-item';
+        div.innerHTML = `<img src="${card.img}" onerror="this.src='https://via.placeholder.com/60'"><div class="name">${card.name}</div><div class="stats">O:${card.O} D:${card.D} P:${card.P}</div>`;
+        coll.appendChild(div);
+    });
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (id === 'teamScreen') renderTeamSelection();
+    if (id === 'mainScreen') updateUI();
+}
+
+// Инициализация
+loadUserData().then(() => {
+    updateUI();
+    setInterval(() => updateUI(), 60000); // обновление каждую минуту для таймера
+});
+</script>
+</body>
+</html>
