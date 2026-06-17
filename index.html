@@ -4,77 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
     <title>NHL Card Battle</title>
-    <!-- Подключение Telegram Web App API -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --tg-theme-bg: #ffffff;
-            --tg-theme-text: #000000;
-            --tg-theme-button: #2AABEE;
-            --tg-theme-button-text: #ffffff;
-            --tg-theme-secondary-bg: #f4f4f4;
-            color-scheme: light;
+            --bg-primary: #0C1D32;
+            --bg-secondary: #14273E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0C4DE;
+            --accent: #FF4B00;
+            --accent-hover: #E04300;
+            --card-bg: #1A3350;
+            --button-bg: #FF4B00;
+            --button-text: #FFFFFF;
+            --rarity-gold: #FFD700;
+            --rarity-silver: #C0C0C0;
+            --rarity-elite: #8A2BE2;
+            --rarity-legend: #FF4500;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: var(--tg-theme-bg);
-            color: var(--tg-theme-text);
-            padding: 12px;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 16px;
             min-height: 100vh;
             transition: background 0.3s;
         }
         .screen { display: none; }
         .screen.active { display: block; }
 
-        h1, h2 { font-weight: 600; margin-bottom: 8px; }
+        h1, h2 { font-weight: 700; margin-bottom: 12px; color: var(--text-primary); }
         .btn {
-            background: var(--tg-theme-button);
-            color: var(--tg-theme-button-text);
+            background: var(--button-bg);
+            color: var(--button-text);
             border: none;
-            border-radius: 10px;
-            padding: 12px 20px;
+            border-radius: 8px;
+            padding: 14px 24px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: background 0.2s, transform 0.1s;
             display: inline-block;
             text-align: center;
-            margin: 4px;
+            margin: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .btn:active { opacity: 0.7; }
+        .btn:active { background: var(--accent-hover); transform: scale(0.97); }
         .btn.secondary {
-            background: var(--tg-theme-secondary-bg);
-            color: var(--tg-theme-text);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid #2A4A6A;
         }
-        .card-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .card-list { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
         .card-item {
-            background: var(--tg-theme-secondary-bg);
+            background: var(--card-bg);
             border-radius: 12px;
-            padding: 8px;
-            width: calc(33% - 8px);
-            min-width: 100px;
+            padding: 10px 8px;
+            width: 100px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             position: relative;
+            transition: transform 0.2s;
+            border: 1px solid rgba(255,255,255,0.1);
         }
+        .card-item:active { transform: scale(0.96); }
         .card-item img {
-            width: 60px; height: 60px; border-radius: 50%; object-fit: cover; background: #ccc;
+            width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: #2A4A6A;
+            border: 2px solid rgba(255,255,255,0.3);
         }
-        .card-item .name { font-weight: 600; font-size: 14px; margin-top: 4px; }
-        .card-item .stats { font-size: 12px; }
+        .card-item .name { font-weight: 600; font-size: 12px; margin: 6px 0 2px; color: var(--text-primary); }
+        .card-item .stats { font-size: 11px; color: var(--text-secondary); }
         .rarity-badge {
             position: absolute; top: 4px; right: 4px;
-            background: gold; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px;
+            width: 16px; height: 16px; border-radius: 50%; font-size: 10px; line-height: 16px; color: black; font-weight: bold;
+            background: var(--rarity-gold);
         }
-        .team-slot {
-            display: flex; justify-content: space-between; align-items: center; margin: 4px 0;
+        .team-preview {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 12px 0;
+            font-size: 13px;
+            border-left: 3px solid var(--accent);
         }
         .match-log {
-            background: #111; color: #0f0; font-family: monospace; padding: 8px; border-radius: 8px; height: 150px;
-            overflow-y: auto; margin: 12px 0; font-size: 13px;
+            background: #0A0E14; color: #00FF41; font-family: 'Courier New', monospace;
+            padding: 10px; border-radius: 8px; height: 180px; overflow-y: auto; margin: 12px 0;
+            font-size: 12px; border: 1px solid #2A4A6A;
         }
-        .streak-badge { background: gold; color: black; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
+        .streak-badge {
+            background: var(--accent); color: white; padding: 2px 8px; border-radius: 20px; font-weight: bold; font-size: 13px;
+        }
+        .info-block {
+            background: var(--bg-secondary);
+            padding: 10px;
+            border-radius: 10px;
+            margin: 8px 0;
+        }
     </style>
 </head>
 <body>
@@ -82,78 +109,88 @@
 <!-- Главный экран -->
 <div id="mainScreen" class="screen active">
     <h1>🏒 NHL Card Battle</h1>
-    <p id="greeting">Привет, менеджер!</p>
-    <div style="margin:8px 0">Уровень: <strong id="userLevel">1</strong> | Побед: <strong id="winsCount">0</strong>/100</div>
-    <div>Монеты: <strong id="coinsDisplay">0</strong> 🪙</div>
-    <div style="margin:8px 0">
-        <span id="streakDisplay" class="streak-badge">Дней подряд: 1</span>
+    <p id="greeting" style="font-size:18px; font-weight:500;">Привет, менеджер!</p>
+    <div class="info-block">
+        <div>🌟 Уровень: <strong id="userLevel">1</strong></div>
+        <div>🏆 Побед: <strong id="winsCount">0</strong>/100</div>
+        <div>🪙 Монеты: <strong id="coinsDisplay">0</strong></div>
+        <div style="margin-top:6px;"><span id="streakDisplay" class="streak-badge">Дней подряд: 1</span></div>
     </div>
-    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:16px;">
-        <button class="btn" onclick="openBooster()">🎁 Бустер (беспл. 1/день)</button>
+    <div class="team-preview" id="teamPreview">⚡️ Состав не выбран</div>
+    <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:14px;">
+        <button class="btn" onclick="openBooster()">🎁 Бесплатный бустер</button>
         <button class="btn secondary" onclick="showScreen('collectionScreen')">📦 Коллекция</button>
         <button class="btn secondary" onclick="showScreen('teamScreen')">👥 Состав</button>
-        <button class="btn secondary" onclick="startMatch()">⚔️ Матч (30 сек)</button>
+        <button class="btn" onclick="startMatch()">⚔️ В БОЙ (30с)</button>
     </div>
-    <div id="dailyTimer" style="margin-top:12px; font-size:14px;"></div>
+    <div id="dailyTimer" style="margin-top:14px; font-size:13px; color: var(--text-secondary);"></div>
 </div>
 
 <!-- Экран коллекции -->
 <div id="collectionScreen" class="screen">
-    <h2>📦 Ваши карты</h2>
+    <h2>📦 Твои карты</h2>
     <div id="collectionContainer" class="card-list"></div>
-    <button class="btn" onclick="showScreen('mainScreen')">⬅️ Назад</button>
+    <button class="btn" onclick="showScreen('mainScreen')">⬅ На главную</button>
 </div>
 
 <!-- Экран состава -->
 <div id="teamScreen" class="screen">
-    <h2>👥 Состав на матч</h2>
-    <p>Выберите 3 нападающих, 2 защитников, 1 вратаря.</p>
-    <div id="rosterSelection" style="margin:12px 0;"></div>
-    <div id="selectedTeamDisplay" style="margin:12px 0; background:var(--tg-theme-secondary-bg); padding:8px; border-radius:8px;">
+    <h2>👥 Выбери состав</h2>
+    <p style="font-size:14px; margin-bottom:8px;">3 нападающих · 2 защитника · 1 вратарь</p>
+    <div id="rosterSelection" class="card-list" style="justify-content: flex-start;"></div>
+    <div style="background:var(--bg-secondary); border-radius:10px; padding:10px; margin:12px 0;">
         <strong>Текущий состав:</strong>
         <div id="forwardsList">Нап: не выбраны</div>
         <div id="defenseList">Защ: не выбраны</div>
         <div id="goalieList">Вр: не выбран</div>
     </div>
-    <button class="btn" onclick="saveTeam()">💾 Сохранить состав</button>
-    <button class="btn secondary" onclick="showScreen('mainScreen')">⬅️ Назад</button>
+    <button class="btn" onclick="showScreen('mainScreen')">⬅ На главную (состав сохранён)</button>
 </div>
 
 <!-- Экран матча -->
 <div id="matchScreen" class="screen">
     <h2>⚔️ Матч против AI</h2>
     <div class="match-log" id="matchLog"></div>
-    <div id="matchResult" style="font-weight:bold; margin:8px 0;"></div>
-    <button class="btn" onclick="showScreen('mainScreen'); checkDailyReset();">✅ Завершить</button>
+    <div id="matchResult" style="font-weight:bold; margin:8px 0; font-size:16px;"></div>
+    <button class="btn" id="finishMatchBtn" onclick="exitMatch()">✅ Вернуться</button>
 </div>
 
 <script>
-// ================== ИГРОВЫЕ ДАННЫЕ ==================
-let tg = window.Telegram.WebApp;
+const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-// Инициализация CloudStorage
+// ============ CloudStorage ============
 const cloud = {
-    async get(key) {
+    getItem(key) {
         return new Promise((resolve) => {
-            tg.CloudStorage.getItem(key, (err, val) => {
-                if (err || !val) resolve(null);
-                else resolve(val);
-            });
+            tg.CloudStorage.getItem(key, (err, val) => resolve(err ? null : val));
         });
     },
-    async set(key, value) {
+    setItem(key, value) {
         return new Promise((resolve) => {
-            tg.CloudStorage.setItem(key, value, (err) => {
-                if (err) console.error(err);
-                resolve();
-            });
+            tg.CloudStorage.setItem(key, value, (err) => resolve(!err));
         });
     }
 };
 
-// База карт (реальные игроки НХЛ, разделение по пулам)
+// ============ Заглушка фото (инициалы на тёмном фоне) ============
+function generateFallbackImg(name) {
+    let initials = name.split(' ').slice(0,2).map(w=>w.charAt(0)).join('');
+    let canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    let ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1A3350';
+    ctx.fillRect(0,0,64,64);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 24px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initials, 32, 32);
+    return canvas.toDataURL();
+}
+
+// ============ База карт ============
 const cardPool = {
     common: [
         { name: "Баркли Гудроу", pos: "F", O: 58, D: 62, P: 70, img: "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8479350.jpg" },
@@ -187,10 +224,9 @@ const cardPool = {
     ]
 };
 
-// Доступность пулов по уровню
 const poolAccess = {1: ['common'], 2: ['common','silver'], 3: ['common','silver','gold'], 4: ['common','silver','gold','elite'], 5: ['common','silver','gold','elite','legendary']};
-const poolPrices = {common: 500, silver: 1200, gold: 2500, elite: 5000, legendary: 10000};
 
+// ============ Состояние игры ============
 let userData = {
     level: 1,
     wins: 0,
@@ -201,16 +237,15 @@ let userData = {
     streak: 0
 };
 
-// ================== ЗАГРУЗКА / СОХРАНЕНИЕ ==================
+// ============ Загрузка/Сохранение ============
 async function loadUserData() {
-    let saved = await cloud.get('nhl_save');
+    let saved = await cloud.getItem('nhl_save');
     if (saved) {
         try {
             let parsed = JSON.parse(saved);
             Object.assign(userData, parsed);
         } catch(e) { resetData(); }
     } else {
-        // Если первый запуск, даём стартовый набор
         resetData();
         giveStarterCards();
         await saveUserData();
@@ -219,7 +254,7 @@ async function loadUserData() {
 }
 
 async function saveUserData() {
-    await cloud.set('nhl_save', JSON.stringify(userData));
+    await cloud.setItem('nhl_save', JSON.stringify(userData));
 }
 
 function resetData() {
@@ -233,29 +268,22 @@ function resetData() {
 }
 
 function giveStarterCards() {
-    // Даём 10 общих карт + 1 вратаря
     for(let i=0; i<10; i++) {
         let card = cardPool.common[Math.floor(Math.random() * cardPool.common.length)];
-        userData.cards.push({...card, id: Date.now()+i});
+        userData.cards.push({...card, id: Date.now()+i, fallback: generateFallbackImg(card.name)});
     }
-    // гарантированный вратарь
     let goalie = cardPool.common.filter(c=>c.pos==='G')[0];
-    userData.cards.push({...goalie, id: Date.now()+100});
+    userData.cards.push({...goalie, id: Date.now()+100, fallback: generateFallbackImg(goalie.name)});
 }
 
-// ================== ЕЖЕДНЕВНЫЙ БОНУС ==================
+// ============ Ежедневный бонус ============
 function checkDailyReset() {
     let today = new Date().toDateString();
     if (userData.lastDaily !== today) {
-        // новый день
         if (userData.lastDaily) {
             let last = new Date(userData.lastDaily);
             let diff = (new Date() - last) / (1000*60*60*24);
-            if (diff >= 1 && diff < 2) {
-                userData.streak++;
-            } else {
-                userData.streak = 1;
-            }
+            userData.streak = (diff >= 1 && diff < 2) ? userData.streak + 1 : 1;
         } else {
             userData.streak = 1;
         }
@@ -265,42 +293,32 @@ function checkDailyReset() {
     updateUI();
 }
 
-function getNextDailyTime() {
-    let now = new Date();
-    let tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
-    return tomorrow - now;
-}
-
-// ================== БУСТЕРЫ ==================
+// ============ Бустеры ============
 function openBooster() {
     let today = new Date().toDateString();
     if (userData.lastDaily === today) {
-        tg.showPopup({title:'Подождите', message:'Бесплатный бустер уже получен сегодня. Приходите завтра!'});
+        tg.showPopup({title:'⏳ Подожди', message:'Бесплатный бустер уже получен сегодня.'});
         return;
     }
-    // Бесплатный бустер текущего уровня
     let availablePools = poolAccess[userData.level];
-    let pool = availablePools[availablePools.length-1]; // максимальный доступный
-    // если streak >= 7, даём бустер уровнем выше
+    let pool = availablePools[availablePools.length-1];
     if (userData.streak >= 7) {
         let nextLevel = userData.level + 1;
         if (nextLevel <= 5 && poolAccess[nextLevel]) {
-            let higherPools = poolAccess[nextLevel];
-            pool = higherPools[higherPools.length-1];
+            pool = poolAccess[nextLevel][poolAccess[nextLevel].length-1];
         }
     }
     let newCards = [];
     for (let i=0; i<3; i++) {
         let card = getRandomCardFromPool(pool);
-        newCards.push({...card, id: Date.now()+i});
+        newCards.push({...card, id: Date.now()+i, fallback: generateFallbackImg(card.name)});
     }
     userData.cards.push(...newCards);
-    userData.lastDaily = new Date().toDateString();
-    if (userData.streak >= 7) userData.streak = 0; // сброс после бонуса 7 дня
+    userData.lastDaily = today;
+    if (userData.streak >= 7) userData.streak = 0;
     saveUserData();
     updateUI();
-    let cardNames = newCards.map(c => c.name).join(', ');
-    tg.showPopup({title:'🎁 Бустер открыт!', message: `Вы получили: ${cardNames}`});
+    tg.showPopup({title:'🎁 Бустер открыт!', message: newCards.map(c=>c.name).join(', ')});
 }
 
 function getRandomCardFromPool(poolName) {
@@ -308,11 +326,11 @@ function getRandomCardFromPool(poolName) {
     return pool[Math.floor(Math.random() * pool.length)];
 }
 
-// ================== МАТЧ ==================
+// ============ Матч ============
 async function startMatch() {
     let team = userData.team;
-    if (team.forwards.length < 3 || team.defense.length < 2 || !team.goalie) {
-        tg.showAlert('Сначала соберите состав (3 нап., 2 защ., 1 вратарь)');
+    if (team.forwards.length !== 3 || team.defense.length !== 2 || !team.goalie) {
+        tg.showAlert('⚠️ Собери состав: 3 нападающих, 2 защитника, 1 вратарь.');
         return;
     }
     showScreen('matchScreen');
@@ -321,83 +339,41 @@ async function startMatch() {
     log.innerHTML = '';
     resultDiv.innerHTML = '';
 
-    // Генерация команды AI на основе уровня игрока
     let aiTeam = generateAITeam(userData.level);
-
-    let userScore = 0;
-    let aiScore = 0;
+    let userScore = 0, aiScore = 0;
 
     for (let period=1; period<=3; period++) {
         log.innerHTML += `<br><b>--- Период ${period} ---</b><br>`;
-        let userPeriodWins = 0;
-        let aiPeriodWins = 0;
-        for (let duel=0; duel<5; duel++) {
-            // случайная пара
-            let userPlayer = getRandomFromArray([...team.forwards, ...team.defense]);
-            let aiPlayer = getRandomFromArray([...aiTeam.forwards, ...aiTeam.defense]);
-            // бросок кубика
-            let userRoll = Math.floor(Math.random()*6)+1;
-            let aiRoll = Math.floor(Math.random()*6)+1;
-            // определяем атакующего (упрощённо: у кого атака выше)
-            let userAttack = userPlayer.O + userRoll;
-            let aiDefense = aiPlayer.D + aiRoll;
-            let winner = null;
-            if (userAttack > aiDefense) {
-                // user атакует успешно, бросок по воротам ai
-                let goalie = aiTeam.goalie;
-                let shotRoll = Math.floor(Math.random()*6)+1;
-                let goalieRoll = Math.floor(Math.random()*6)+1;
-                let shotPower = userPlayer.O + shotRoll;
-                let savePower = goalie.SV + goalieRoll;
-                if (shotPower > savePower) {
-                    // гол!
-                    userPeriodWins++;
-                    log.innerHTML += `🚨 ГОЛ! ${userPlayer.name} пробивает ${goalie.name}.<br>`;
-                } else {
-                    log.innerHTML += `🛑 Сейв ${goalie.name} после броска ${userPlayer.name}.<br>`;
-                }
-            } else if (aiPlayer.O + aiRoll > userPlayer.D + userRoll) {
-                // ai атакует
-                let goalie = team.goalie;
-                let shotRoll = Math.floor(Math.random()*6)+1;
-                let goalieRoll = Math.floor(Math.random()*6)+1;
-                let shotPower = aiPlayer.O + shotRoll;
-                let savePower = goalie.SV + goalieRoll;
-                if (shotPower > savePower) {
-                    aiPeriodWins++;
-                    log.innerHTML += `😞 Пропущен гол! ${aiPlayer.name} обыграл ${goalie.name}.<br>`;
-                } else {
-                    log.innerHTML += `🧤 ${goalie.name} спасает после ${aiPlayer.name}.<br>`;
-                }
+        let userW = 0, aiW = 0;
+        for (let d=0; d<5; d++) {
+            let uPlayer = team.forwards.concat(team.defense).sort(()=>Math.random()-0.5)[0];
+            let aPlayer = aiTeam.forwards.concat(aiTeam.defense).sort(()=>Math.random()-0.5)[0];
+            let uRoll = Math.floor(Math.random()*6)+1, aRoll = Math.floor(Math.random()*6)+1;
+            if (uPlayer.O + uRoll > aPlayer.D + aRoll) {
+                let shot = uPlayer.O + Math.floor(Math.random()*6)+1;
+                let save = aiTeam.goalie.SV + Math.floor(Math.random()*6)+1;
+                if (shot > save) { userW++; log.innerHTML += `🚨 ГОЛ! ${uPlayer.name} пробил ${aiTeam.goalie.name}.<br>`; }
+                else { log.innerHTML += `🛑 Сейв ${aiTeam.goalie.name} после броска ${uPlayer.name}.<br>`; }
+            } else if (aPlayer.O + aRoll > uPlayer.D + uRoll) {
+                let shot = aPlayer.O + Math.floor(Math.random()*6)+1;
+                let save = team.goalie.SV + Math.floor(Math.random()*6)+1;
+                if (shot > save) { aiW++; log.innerHTML += `😞 Пропустили! ${aPlayer.name} забивает ${team.goalie.name}.<br>`; }
+                else { log.innerHTML += `🧤 ${team.goalie.name} спас после ${aPlayer.name}.<br>`; }
             } else {
-                log.innerHTML += `⚔️ Ничья в微型-дуэли ${userPlayer.name} vs ${aiPlayer.name}.<br>`;
+                log.innerHTML += `⚡ Борьба ${uPlayer.name} vs ${aPlayer.name}, без гола.<br>`;
             }
-            await sleep(600); // небольшая задержка для эффекта
+            await new Promise(r => setTimeout(r, 450));
         }
-        // определяем победителя периода
-        if (userPeriodWins > aiPeriodWins) {
-            userScore++;
-            log.innerHTML += `✅ Период ${period} ваш!<br>`;
-        } else if (aiPeriodWins > userPeriodWins) {
-            aiScore++;
-            log.innerHTML += `❌ Период ${period} за AI.<br>`;
-        } else {
-            log.innerHTML += `🤝 Период ${period} ничья.<br>`;
-        }
+        if (userW > aiW) { userScore++; log.innerHTML += `✅ Период ${period} ваш!<br>`; }
+        else if (aiW > userW) { aiScore++; log.innerHTML += `❌ Период ${period} за AI.<br>`; }
+        else { log.innerHTML += `🤝 Ничья в периоде ${period}.<br>`; }
     }
 
-    // Результат матча
     let coinsEarned = 0;
-    let won = false;
     if (userScore > aiScore) {
-        won = true;
-        coinsEarned = 200;
-        resultDiv.innerHTML = `🏆 Победа! Счёт ${userScore}:${aiScore}. +200 монет.`;
-        userData.wins++;
-        if (userData.wins >= userData.level * 100) {
-            userData.level++;
-            tg.showAlert('🎉 Поздравляем! Вы достигли уровня '+userData.level+'!');
-        }
+        coinsEarned = 200; userData.wins++;
+        if (userData.wins >= userData.level * 100) userData.level++;
+        resultDiv.innerHTML = `🏆 Победа ${userScore}:${aiScore}! +200 монет.`;
     } else if (userScore < aiScore) {
         coinsEarned = 80;
         resultDiv.innerHTML = `😔 Поражение ${userScore}:${aiScore}. +80 монет.`;
@@ -406,108 +382,109 @@ async function startMatch() {
         resultDiv.innerHTML = `🤝 Ничья ${userScore}:${aiScore}. +120 монет.`;
     }
     userData.coins += coinsEarned;
-    await saveUserData();
+    saveUserData();
+    updateUI();
+}
+
+function exitMatch() {
+    showScreen('mainScreen');
     updateUI();
 }
 
 function generateAITeam(level) {
     let pools = poolAccess[level];
-    let aiCards = [];
-    for (let p of pools) {
-        aiCards.push(...cardPool[p]);
-    }
-    // Выбрать случайных 3F, 2D, 1G
-    let forwards = aiCards.filter(c=>c.pos==='F').sort(()=>Math.random()-0.5).slice(0,3);
-    let defense = aiCards.filter(c=>c.pos==='D').sort(()=>Math.random()-0.5).slice(0,2);
-    let goalies = aiCards.filter(c=>c.pos==='G').sort(()=>Math.random()-0.5).slice(0,1);
-    return {
-        forwards, defense, goalie: goalies[0]
-    };
+    let all = pools.flatMap(p => cardPool[p]);
+    let f = all.filter(c=>c.pos==='F').sort(()=>Math.random()-0.5).slice(0,3);
+    let d = all.filter(c=>c.pos==='D').sort(()=>Math.random()-0.5).slice(0,2);
+    let g = all.filter(c=>c.pos==='G').sort(()=>Math.random()-0.5)[0];
+    return { forwards: f, defense: d, goalie: g };
 }
 
-function getRandomFromArray(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
-function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+// ============ Состав (автосохранение) ============
+function togglePlayer(card) {
+    let t = userData.team;
+    if (card.pos === 'F') {
+        let idx = t.forwards.findIndex(c=>c.id===card.id);
+        if (idx >= 0) t.forwards.splice(idx,1);
+        else if (t.forwards.length < 3) t.forwards.push(card);
+        else { tg.showAlert('Максимум 3 нападающих'); return; }
+    } else if (card.pos === 'D') {
+        let idx = t.defense.findIndex(c=>c.id===card.id);
+        if (idx >= 0) t.defense.splice(idx,1);
+        else if (t.defense.length < 2) t.defense.push(card);
+        else { tg.showAlert('Максимум 2 защитника'); return; }
+    } else if (card.pos === 'G') {
+        t.goalie = (t.goalie && t.goalie.id === card.id) ? null : card;
+    }
+    displaySelectedTeam();
+    saveUserData(); // автосохранение сразу после изменения
+    updateTeamPreview();
+}
 
-// ================== СОСТАВ ==================
+function displaySelectedTeam() {
+    let t = userData.team;
+    document.getElementById('forwardsList').innerText = 'Нап: ' + (t.forwards.map(c=>c.name).join(', ') || '—');
+    document.getElementById('defenseList').innerText = 'Защ: ' + (t.defense.map(c=>c.name).join(', ') || '—');
+    document.getElementById('goalieList').innerText = 'Вр: ' + (t.goalie ? t.goalie.name : '—');
+}
+
+function updateTeamPreview() {
+    let t = userData.team;
+    let preview = document.getElementById('teamPreview');
+    if (t.forwards.length === 3 && t.defense.length === 2 && t.goalie) {
+        preview.innerHTML = `⚡ Состав: ${t.forwards[0].name}, ${t.forwards[1].name}, ${t.forwards[2].name} / ${t.defense[0].name}, ${t.defense[1].name} / 🥅 ${t.goalie.name}`;
+    } else {
+        preview.innerHTML = '⚠️ Состав неполный (нужно 3 нап., 2 защ., 1 вр.)';
+    }
+}
+
 function renderTeamSelection() {
     let container = document.getElementById('rosterSelection');
-    container.innerHTML = '<p>Нажмите на карту, чтобы добавить/убрать из состава.</p>';
-    let allCards = userData.cards;
-    allCards.forEach(card => {
+    container.innerHTML = '';
+    userData.cards.forEach(card => {
         let div = document.createElement('div');
         div.className = 'card-item';
-        div.innerHTML = `<img src="${card.img}" onerror="this.src='https://via.placeholder.com/60'"><div class="name">${card.name}</div><div class="stats">O:${card.O} D:${card.D} P:${card.P}</div>`;
+        div.innerHTML = `<img src="${card.img}" onerror="this.onerror=null; this.src='${card.fallback || generateFallbackImg(card.name)}'"><div class="name">${card.name}</div><div class="stats">O:${card.O} D:${card.D} P:${card.P}</div>`;
         div.onclick = () => togglePlayer(card);
         container.appendChild(div);
     });
     displaySelectedTeam();
 }
 
-function togglePlayer(card) {
-    let team = userData.team;
-    if (card.pos === 'F') {
-        if (team.forwards.find(c=>c.id===card.id)) {
-            team.forwards = team.forwards.filter(c=>c.id!==card.id);
-        } else if (team.forwards.length < 3) {
-            team.forwards.push(card);
-        } else { tg.showAlert('Максимум 3 нападающих'); return; }
-    } else if (card.pos === 'D') {
-        if (team.defense.find(c=>c.id===card.id)) {
-            team.defense = team.defense.filter(c=>c.id!==card.id);
-        } else if (team.defense.length < 2) {
-            team.defense.push(card);
-        } else { tg.showAlert('Максимум 2 защитника'); return; }
-    } else if (card.pos === 'G') {
-        if (team.goalie && team.goalie.id === card.id) {
-            team.goalie = null;
-        } else {
-            team.goalie = card;
-        }
-    }
-    displaySelectedTeam();
-}
-
-function displaySelectedTeam() {
-    let t = userData.team;
-    document.getElementById('forwardsList').innerText = 'Нап: ' + (t.forwards.map(c=>c.name).join(', ') || 'не выбраны');
-    document.getElementById('defenseList').innerText = 'Защ: ' + (t.defense.map(c=>c.name).join(', ') || 'не выбраны');
-    document.getElementById('goalieList').innerText = 'Вр: ' + (t.goalie ? t.goalie.name : 'не выбран');
-}
-
-function saveTeam() {
-    saveUserData();
-    tg.showAlert('Состав сохранён!');
-    showScreen('mainScreen');
-}
-
-// ================== UI ==================
+// ============ UI общее ============
 function updateUI() {
     document.getElementById('userLevel').innerText = userData.level;
     document.getElementById('winsCount').innerText = userData.wins;
     document.getElementById('coinsDisplay').innerText = userData.coins;
-    document.getElementById('streakDisplay').innerText = `Дней подряд: ${userData.streak}`;
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    document.getElementById('streakDisplay').innerText = `🔥 Дней подряд: ${userData.streak}`;
+    if (tg.initDataUnsafe?.user?.first_name) {
         document.getElementById('greeting').innerText = `Привет, ${tg.initDataUnsafe.user.first_name}!`;
     }
-    // Таймер до следующего бесплатного бустера
+    updateTeamPreview();
+
     let timerDiv = document.getElementById('dailyTimer');
-    if (userData.lastDaily === new Date().toDateString()) {
-        let msLeft = getNextDailyTime();
-        let hours = Math.floor(msLeft/(1000*60*60));
-        let mins = Math.floor((msLeft%(1000*60*60))/(1000*60));
-        timerDiv.innerHTML = `Бесплатный бустер будет доступен через ${hours}ч ${mins}мин.`;
+    let today = new Date().toDateString();
+    if (userData.lastDaily === today) {
+        let now = new Date();
+        let tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
+        let msLeft = tomorrow - now;
+        let h = Math.floor(msLeft/(1000*60*60));
+        let m = Math.floor((msLeft%(1000*60*60))/(1000*60));
+        timerDiv.innerHTML = `⏳ Бесплатный бустер через ${h}ч ${m}мин`;
     } else {
-        timerDiv.innerHTML = 'Бесплатный бустер доступен!';
+        timerDiv.innerHTML = '🎁 Бесплатный бустер доступен!';
     }
-    // Коллекция
+
     let coll = document.getElementById('collectionContainer');
-    coll.innerHTML = '';
-    userData.cards.forEach(card => {
-        let div = document.createElement('div');
-        div.className = 'card-item';
-        div.innerHTML = `<img src="${card.img}" onerror="this.src='https://via.placeholder.com/60'"><div class="name">${card.name}</div><div class="stats">O:${card.O} D:${card.D} P:${card.P}</div>`;
-        coll.appendChild(div);
-    });
+    if (coll) {
+        coll.innerHTML = '';
+        userData.cards.forEach(card => {
+            let div = document.createElement('div');
+            div.className = 'card-item';
+            div.innerHTML = `<img src="${card.img}" onerror="this.onerror=null; this.src='${card.fallback || generateFallbackImg(card.name)}'"><div class="name">${card.name}</div><div class="stats">O:${card.O} D:${card.D} P:${card.P}</div>`;
+            coll.appendChild(div);
+        });
+    }
 }
 
 function showScreen(id) {
@@ -517,10 +494,10 @@ function showScreen(id) {
     if (id === 'mainScreen') updateUI();
 }
 
-// Инициализация
+// Старт
 loadUserData().then(() => {
     updateUI();
-    setInterval(() => updateUI(), 60000); // обновление каждую минуту для таймера
+    setInterval(updateUI, 60000);
 });
 </script>
 </body>
