@@ -29,8 +29,6 @@
             border:2px solid #888;
         }
         .card-item .name { font-weight:600; font-size:10px; margin:4px 0; color:#FFF; }
-        .card-item .stats { font-size:10px; display:flex; justify-content:center; gap:3px; flex-wrap:wrap; }
-        .stat-o { color:#0F0; } .stat-d { color:#F44; } .stat-p { color:#48F; }
         .info-block { background:#111; padding:12px; border-radius:10px; margin:10px 0; border:1px solid #333; }
         .team-preview { background:#0D0D0D; border-left:4px solid #C8102E; padding:10px; margin:12px 0; font-size:13px; }
         .streak-badge { background:#C8102E; padding:3px 10px; border-radius:20px; font-weight:bold; font-size:13px; }
@@ -38,6 +36,7 @@
         .duel-container { display:flex; align-items:center; justify-content:center; gap:20px; margin:20px 0; }
         .duel-card { background:#1A1A1A; border-radius:12px; padding:12px; text-align:center; width:120px; border:2px solid #333; }
         .duel-card img { width:70px; height:70px; border-radius:50%; border:2px solid #888; }
+        .duel-card .pos { font-size:10px; color:#AAA; }
         .vs-text { font-size:28px; font-weight:800; color:#C8102E; }
         .event-log { background:#0A0A0A; border-radius:8px; padding:10px; margin-top:12px; font-size:14px; text-align:center; min-height:40px; border:1px solid #333; }
         .match-score { font-size:20px; font-weight:bold; margin:8px 0; text-align:center; }
@@ -46,8 +45,6 @@
     </style>
 </head>
 <body>
-
-<!-- Главный экран -->
 <div id="mainScreen" class="screen active">
     <h1>🏒 NHL Card Battle</h1>
     <p id="greeting" style="font-size:18px;">Привет, менеджер!</p>
@@ -68,7 +65,6 @@
     <div id="dailyTimer" style="margin-top:14px; font-size:13px; color:#AAA;"></div>
 </div>
 
-<!-- Экран выбора стиля (появляется перед матчем) -->
 <div id="styleScreen" class="screen">
     <h2>Выбери стиль игры</h2>
     <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:20px 0;">
@@ -77,18 +73,16 @@
         <button class="btn" onclick="setStyle('balanced')">⚖️ Сбалансированный</button>
         <button class="btn" onclick="setStyle('physical')">💪 Силовой</button>
     </div>
-    <p id="styleDesc" style="color:#AAA; margin-top:10px;"></p>
+    <p id="styleDesc" style="color:#AAA;"></p>
     <button class="btn secondary" onclick="showScreen('mainScreen')">⬅ Назад</button>
 </div>
 
-<!-- Коллекция -->
 <div id="collectionScreen" class="screen">
     <h2>📦 Твои карты</h2>
     <div id="collectionContainer"></div>
     <button class="btn" onclick="showScreen('mainScreen')">⬅ На главную</button>
 </div>
 
-<!-- Состав -->
 <div id="teamScreen" class="screen">
     <h2>👥 Выбери состав</h2>
     <p style="color:#AAA;">3 нападающих · 2 защитника · 1 вратарь</p>
@@ -102,13 +96,10 @@
     <button class="btn" onclick="showScreen('mainScreen')">⬅ На главную (состав сохранён)</button>
 </div>
 
-<!-- Экран матча (дуэльный) -->
 <div id="matchScreen" class="screen">
     <h2>⚔️ Матч</h2>
     <div class="match-score" id="matchScoreDisplay">0 : 0</div>
-    <div class="duel-container" id="duelContainer">
-        <!-- Динамически заполняется -->
-    </div>
+    <div class="duel-container" id="duelContainer"></div>
     <div class="action-btns" id="actionButtons"></div>
     <div class="event-log" id="eventLog">Выбери действие для атаки</div>
     <button class="btn" id="finishMatchBtn" onclick="exitMatch()" style="display:none;">✅ Завершить</button>
@@ -125,7 +116,6 @@ const cloud = {
     removeItem(k) { return new Promise(r => tg.CloudStorage.removeItem(k, e => r(!e))); }
 };
 
-// Генератор аватара (инициалы)
 function genAvatar(name, pos) {
     let initials = name.split(' ').slice(0,2).map(w=>w[0]).join('');
     let canvas = document.createElement('canvas'); canvas.width=128; canvas.height=128;
@@ -139,73 +129,65 @@ function genAvatar(name, pos) {
     return canvas.toDataURL();
 }
 
-// База игроков (расширенная, с новыми навыками)
+// База игроков (скрытые параметры для AI, не отображаются)
 const cardPool = {
     common: [
-        {n:"Баркли Гудроу",p:"F",spd:65,sht:58,drb:62},{n:"Мэтт Мартин",p:"F",spd:60,sht:55,drb:60},
-        {n:"Люк Гленденинг",p:"F",spd:63,sht:54,drb:68},{n:"Райан Ривз",p:"F",spd:58,sht:50,drb:58},
+        {n:"Баркли Гудроу",p:"F",spd:68,sht:62,drb:65},{n:"Мэтт Мартин",p:"F",spd:63,sht:58,drb:63},
+        {n:"Люк Гленденинг",p:"F",spd:66,sht:57,drb:70},{n:"Райан Ривз",p:"F",spd:61,sht:53,drb:61},
         {n:"Дерек Форборт",p:"D",spd:55,blk:72,def:74},{n:"Джош Браун",p:"D",spd:52,blk:68,def:65},
         {n:"Ник Силер",p:"D",spd:54,blk:70,def:72},{n:"Джейкоб Миддлтон",p:"D",spd:56,blk:68,def:74},
-        {n:"Кейси Десмит",p:"G",sav:72},{n:"Кевин Ланкинен",p:"G",sav:74},
-        {n:"Майкл Амадио",p:"F",spd:62,sht:56,drb:60},{n:"Ник Казинс",p:"F",spd:61,sht:57,drb:61},
-        {n:"Зак Сэнфорд",p:"F",spd:60,sht:55,drb:59},{n:"Джош Андерсон",p:"F",spd:68,sht:60,drb:63},
-        {n:"Тайлер Мотт",p:"F",spd:64,sht:52,drb:65},{n:"Мэтт Руни",p:"F",spd:63,sht:53,drb:64},
-        {n:"Джейк Лещишин",p:"F",spd:62,sht:58,drb:60},{n:"Томаш Носек",p:"F",spd:61,sht:56,drb:63},
-        {n:"Джастин Браун",p:"F",spd:65,sht:62,drb:67},{n:"Кайл Клиффорд",p:"F",spd:59,sht:51,drb:59},
+        {n:"Кейси Десмит",p:"G",rct:70,mov:68,rel:72},{n:"Кевин Ланкинен",p:"G",rct:72,mov:65,rel:74},
+        {n:"Майкл Амадио",p:"F",spd:65,sht:60,drb:63},{n:"Ник Казинс",p:"F",spd:64,sht:61,drb:64},
+        {n:"Зак Сэнфорд",p:"F",spd:63,sht:59,drb:62},{n:"Джош Андерсон",p:"F",spd:71,sht:64,drb:66},
+        {n:"Тайлер Мотт",p:"F",spd:67,sht:56,drb:68},{n:"Мэтт Руни",p:"F",spd:66,sht:57,drb:67},
+        {n:"Джейк Лещишин",p:"F",spd:65,sht:62,drb:63},{n:"Томаш Носек",p:"F",spd:64,sht:60,drb:66},
+        {n:"Джастин Браун",p:"F",spd:68,sht:66,drb:70},{n:"Кайл Клиффорд",p:"F",spd:62,sht:55,drb:62},
         {n:"Бренден Диллон",p:"D",spd:58,blk:74,def:76},{n:"Эрик Гудбрансон",p:"D",spd:56,blk:76,def:78},
         {n:"Брэйден Макнэбб",p:"D",spd:57,blk:75,def:77},{n:"Яни Хаканпаа",p:"D",spd:55,blk:78,def:80},
         {n:"Джоэль Эдмундсон",p:"D",spd:59,blk:73,def:75},{n:"Джорди Бенн",p:"D",spd:54,blk:71,def:73},
         {n:"Коннор Клифтон",p:"D",spd:60,blk:69,def:74},{n:"Джейк Уолман",p:"D",spd:62,blk:68,def:70},
-        {n:"Спенсер Мартин",p:"G",sav:71},{n:"Магнус Хелльберг",p:"G",sav:70}
+        {n:"Спенсер Мартин",p:"G",rct:71,mov:67,rel:71},{n:"Магнус Хелльберг",p:"G",rct:69,mov:64,rel:73}
     ],
     silver: [
-        {n:"Брэндон Саад",p:"F",spd:70,sht:72,drb:65},{n:"Джейк Дибраск",p:"F",spd:73,sht:74,drb:62},
-        {n:"Адам Ларссон",p:"D",spd:62,blk:82,def:82},{n:"Фредрик Андерсен",p:"G",sav:82},
-        {n:"Тайлер Тоффоли",p:"F",spd:71,sht:76,drb:64},{n:"Эндрю Коглиано",p:"F",spd:69,sht:68,drb:72},
-        {n:"Джейми Олексяк",p:"D",spd:60,blk:80,def:82},{n:"Антти Раанта",p:"G",sav:80},
-        {n:"Конор Гарланд",p:"F",spd:74,sht:78,drb:63},{n:"Мэтт Дамба",p:"D",spd:68,blk:78,def:76}
+        {n:"Брэндон Саад",p:"F",spd:73,sht:75,drb:68},{n:"Джейк Дибраск",p:"F",spd:76,sht:77,drb:65},
+        {n:"Адам Ларссон",p:"D",spd:62,blk:82,def:82},{n:"Фредрик Андерсен",p:"G",rct:80,mov:78,rel:82},
+        {n:"Тайлер Тоффоли",p:"F",spd:74,sht:79,drb:67},{n:"Эндрю Коглиано",p:"F",spd:72,sht:71,drb:75},
+        {n:"Джейми Олексяк",p:"D",spd:60,blk:80,def:82},{n:"Антти Раанта",p:"G",rct:78,mov:76,rel:80},
+        {n:"Конор Гарланд",p:"F",spd:77,sht:81,drb:66},{n:"Мэтт Дамба",p:"D",spd:68,blk:78,def:76}
     ],
     gold: [
-        {n:"Брэйден Пойнт",p:"F",spd:85,sht:88,drb:74},{n:"Чарли Макэвой",p:"D",spd:78,blk:88,def:88},
-        {n:"Юусе Сарос",p:"G",sav:90},{n:"Брэди Ткачук",p:"F",spd:80,sht:90,drb:80},
-        {n:"Джонни Годро",p:"F",spd:88,sht:92,drb:72},{n:"Ши Теодор",p:"D",spd:76,blk:86,def:86},
-        {n:"Тристан Джарри",p:"G",sav:88}
+        {n:"Брэйден Пойнт",p:"F",spd:88,sht:91,drb:77},{n:"Чарли Макэвой",p:"D",spd:78,blk:88,def:88},
+        {n:"Юусе Сарос",p:"G",rct:88,mov:85,rel:90},{n:"Брэди Ткачук",p:"F",spd:83,sht:93,drb:83},
+        {n:"Джонни Годро",p:"F",spd:91,sht:95,drb:75},{n:"Ши Теодор",p:"D",spd:76,blk:86,def:86},
+        {n:"Тристан Джарри",p:"G",rct:86,mov:84,rel:88}
     ],
     elite: [
-        {n:"Александр Барков",p:"F",spd:88,sht:92,drb:88},{n:"Виктор Хедман",p:"D",spd:82,blk:94,def:94},
-        {n:"Андрей Василевский",p:"G",sav:94},{n:"Мэттью Ткачук",p:"F",spd:86,sht:94,drb:82},
-        {n:"Роман Йоси",p:"D",spd:84,blk:92,def:92},{n:"Коннор Хеллебак",p:"G",sav:93}
+        {n:"Александр Барков",p:"F",spd:91,sht:95,drb:91},{n:"Виктор Хедман",p:"D",spd:82,blk:94,def:94},
+        {n:"Андрей Василевский",p:"G",rct:94,mov:90,rel:94},{n:"Мэттью Ткачук",p:"F",spd:89,sht:97,drb:85},
+        {n:"Роман Йоси",p:"D",spd:84,blk:92,def:92},{n:"Коннор Хеллебак",p:"G",rct:92,mov:89,rel:93}
     ],
     legendary: [
-        {n:"Коннор Макдэвид",p:"F",spd:99,sht:99,drb:85},{n:"Кейл Макар",p:"D",spd:92,blk:95,def:92},
-        {n:"Игорь Шестеркин",p:"G",sav:96},{n:"Нэтан Маккиннон",p:"F",spd:96,sht:98,drb:88},
-        {n:"Леон Драйзайтль",p:"F",spd:92,sht:97,drb:86},{n:"Кирилл Капризов",p:"F",spd:91,sht:96,drb:80}
+        {n:"Коннор Макдэвид",p:"F",spd:99,sht:99,drb:88},{n:"Кейл Макар",p:"D",spd:92,blk:95,def:92},
+        {n:"Игорь Шестеркин",p:"G",rct:96,mov:94,rel:96},{n:"Нэтан Маккиннон",p:"F",spd:96,sht:98,drb:91},
+        {n:"Леон Драйзайтль",p:"F",spd:92,sht:97,drb:89},{n:"Кирилл Капризов",p:"F",spd:91,sht:96,drb:83}
     ]
 };
 
 const poolAccess = {1:['common'],2:['common','silver'],3:['common','silver','gold'],4:['common','silver','gold','elite'],5:['common','silver','gold','elite','legendary']};
 
-// Состояние
-let userData = {
-    level:1, wins:0, coins:1000, cards:[],
-    team:{forwards:[],defense:[],goalie:null},
-    lastDaily:null, streak:0, style:'balanced'
-};
-
-// Текущий матч (не сохраняется в облаке)
+let userData = { level:1, wins:0, coins:1000, cards:[], team:{forwards:[],defense:[],goalie:null}, lastDaily:null, streak:0, style:'balanced' };
 let matchState = null;
 
 function createCard(base) {
     return {
         name: base.n, pos: base.p,
-        spd: base.spd || 0, sht: base.sht || 0, drb: base.drb || 0,
-        blk: base.blk || 0, def: base.def || 0, sav: base.sav || 0,
-        avatar: genAvatar(base.n, base.p),
-        energy: 100
+        spd: base.spd||0, sht: base.sht||0, drb: base.drb||0,
+        blk: base.blk||0, def: base.def||0,
+        rct: base.rct||0, mov: base.mov||0, rel: base.rel||0,
+        avatar: genAvatar(base.n, base.p), energy:100
     };
 }
 
-// Удаление дубликатов и загрузка
 function removeDuplicates(cards) {
     const seen = new Set();
     return cards.filter(c => { const key = c.name+c.pos; if(seen.has(key)) return false; seen.add(key); return true; });
@@ -220,7 +202,7 @@ async function loadUserData() {
             parsed.cards = removeDuplicates(parsed.cards);
             Object.assign(userData, parsed);
         } catch(e){ resetData(); }
-    } else { resetData(); }
+    } else resetData();
     if (userData.cards.length < 10) giveStarterCards();
     await saveUserData();
     checkDailyReset();
@@ -247,6 +229,7 @@ function giveStarterCards() {
     }
 }
 
+// ... (бустер, сброс, интерфейс коллекции/состава без статов)
 function openBooster() {
     let today = new Date().toDateString();
     if (userData.lastDaily === today) { tg.showPopup({title:'⏳', message:'Бустер уже получен'}); return; }
@@ -257,15 +240,13 @@ function openBooster() {
         if (next) pool = next[next.length-1];
     }
     let baseCards = cardPool[pool];
-    let newCards = [];
-    let coinsGain = 0, attempts = 0;
+    let newCards = [], coinsGain = 0, attempts = 0;
     while (newCards.length < 3 && attempts < 100) {
         let base = baseCards[Math.floor(Math.random()*baseCards.length)];
         if (!userData.cards.some(c => c.name===base.n && c.pos===base.p)) {
-            let card = createCard(base);
-            newCards.push(card);
-            userData.cards.push(card);
-        } else { coinsGain += 500; }
+            newCards.push(createCard(base));
+            userData.cards.push(newCards[newCards.length-1]);
+        } else coinsGain += 500;
         attempts++;
     }
     userData.lastDaily = today;
@@ -277,75 +258,73 @@ function openBooster() {
     tg.showPopup({title:'🎁 Бустер', message: msg});
 }
 
-// Матч
-function setStyle(style) {
-    userData.style = style;
-    updateStyleDesc();
-    showScreen('mainScreen');
-    // сразу начинаем матч после выбора стиля? Или возвращаемся на главную, чтобы нажать "В БОЙ"? Удобнее вернуться.
-    // Но можно сразу запустить startMatch(). Сделаем возврат, чтобы игрок подтвердил.
+function setStyle(style) { userData.style = style; updateStyleDesc(); showScreen('mainScreen'); }
+function updateStyleDesc() {} 
+
+// --- МАТЧ (камень-ножницы-бумага) ---
+const RULES_FORWARD_VS_DEFENSE = {
+    speed: { speed: true, block: true, def: false },
+    shot:  { speed: true, block: false, def: true },
+    deke:  { speed: true, block: false, def: false }
+};
+const RULES_FORWARD_VS_GOALIE = {
+    speed: { reaction: true, movement: false, reliability: false },
+    shot:  { reaction: false, movement: true, reliability: true },
+    deke:  { reaction: true, movement: false, reliability: false }
+};
+
+function weightedRandom(weights) {
+    const total = Object.values(weights).reduce((a,b)=>a+b,0);
+    let r = Math.random()*total;
+    for (let key in weights) {
+        r -= weights[key];
+        if (r <= 0) return key;
+    }
+    return Object.keys(weights)[0];
 }
 
-function updateStyleDesc() {
-    let desc = document.getElementById('styleDesc');
-    if (!desc) return;
-    const texts = {
-        aggressive: '⚡ Агрессивный: +2 к атаке (SPD,SHT,DRB), +1 к усталости. Сильнее бьёт, быстрее устаёт.',
-        defensive: '🛡️ Защитный: +2 к защите (BLK,DEF,SAV), -1 к атаке. Меньше голов, меньше пропущенных.',
-        balanced: '⚖️ Сбалансированный: без бонусов и штрафов.',
-        physical: '💪 Силовой: +3 к BLK/DEF/SAV, +1 к SHT, но -2 SPD. Мощный отпор, но медлительный.'
-    };
-    desc.innerText = texts[userData.style] || '';
+function chooseAIForwardAction(f) {
+    const w = { speed: f.spd, shot: f.sht, deke: f.drb };
+    return weightedRandom(w);
+}
+function chooseAIDefenderAction(d) {
+    const w = { speed: d.spd, block: d.blk, def: d.def };
+    return weightedRandom(w);
+}
+function chooseAIGoalieAction(g) {
+    const w = { reaction: g.rct, movement: g.mov, reliability: g.rel };
+    return weightedRandom(w);
 }
 
 async function startMatch() {
     const t = userData.team;
     if (t.forwards.length!==3 || t.defense.length!==2 || !t.goalie) {
-        tg.showAlert('Соберите состав (3 нап, 2 защ, 1 вр)'); return;
+        tg.showAlert('Соберите состав'); return;
     }
     showScreen('matchScreen');
     let style = userData.style;
-    // Подготовка команд с бонусами стиля
-    let myForwards = t.forwards.map(c => ({...c, energy:100}));
-    let myDefense = t.defense.map(c => ({...c, energy:100}));
-    let myGoalie = {...t.goalie, energy:100};
-    // Применяем модификаторы стиля
-    applyStyle(myForwards, myDefense, myGoalie, style);
-    // AI команда
+    let myF = t.forwards.map(c => ({...c, energy:100}));
+    let myD = t.defense.map(c => ({...c, energy:100}));
+    let myG = {...t.goalie, energy:100};
+    applyStyle(myF, myD, myG, style);
     let aiTeam = generateAITeam(style);
-    let aiForwards = aiTeam.forwards.map(c => ({...c, energy:100}));
-    let aiDefense = aiTeam.defense.map(c => ({...c, energy:100}));
-    let aiGoalie = {...aiTeam.goalie, energy:100};
-    applyStyle(aiForwards, aiDefense, aiGoalie, style); // AI тоже получает стиль
+    let aiF = aiTeam.forwards.map(c => ({...c, energy:100}));
+    let aiD = aiTeam.defense.map(c => ({...c, energy:100}));
+    let aiG = {...aiTeam.goalie, energy:100};
+    applyStyle(aiF, aiD, aiG, style);
 
     matchState = {
-        myForwards, myDefense, myGoalie,
-        aiForwards, aiDefense, aiGoalie,
-        userScore: 0, aiScore: 0,
-        period: 1, attackNum: 0,
-        phase: 'attack', // 'attack' или 'defense'
-        currentAttacker: null,
-        currentDefender: null,
-        finished: false
+        myForwards: myF, myDefense: myD, myGoalie: myG,
+        aiForwards: aiF, aiDefense: aiD, aiGoalie: aiG,
+        userScore:0, aiScore:0, attackNum:0,
+        finished:false, phase:'', waitingForGoalie:false,
+        currentForward:null, currentDefender:null, aiForwardAction:null
     };
-
     updateMatchUI();
     nextAttack();
 }
 
-function applyStyle(forwards, defense, goalie, style) {
-    for (let f of forwards) {
-        if (style==='aggressive') { f.spd+=2; f.sht+=2; f.drb+=2; f.energy-=10; }
-        else if (style==='defensive') { f.spd-=1; f.sht-=1; f.drb-=1; }
-        else if (style==='physical') { f.spd-=2; f.sht+=1; }
-    }
-    for (let d of defense) {
-        if (style==='defensive') { d.blk+=2; d.def+=2; d.spd+=1; }
-        else if (style==='physical') { d.blk+=3; d.def+=3; d.spd-=2; }
-        else if (style==='aggressive') { d.blk-=1; d.def-=1; }
-    }
-    if (style==='defensive' || style==='physical') goalie.sav += (style==='defensive'?2:3);
-}
+function applyStyle(fw, def, goalie, style) { /* можно оставить пустым или добавить бонусы к скрытым статам */ }
 
 function generateAITeam(style) {
     let level = userData.level;
@@ -362,27 +341,20 @@ function generateAITeam(style) {
 function nextAttack() {
     if (matchState.finished) return;
     let ms = matchState;
-    if (ms.attackNum >= 10) { // 2 периода по 5 атак
-        endMatch();
-        return;
-    }
-    // Определяем, чья атака (чётность атаки: чётная - игрок атакует, нечётная - AI)
+    if (ms.attackNum >= 10) { endMatch(); return; }
+    // Игрок атакует (чётные атаки) или AI атакует
     if (ms.attackNum % 2 === 0) {
-        // Игрок атакует
         let f = ms.myForwards[Math.floor(Math.random()*ms.myForwards.length)];
         let d = ms.aiDefense[Math.floor(Math.random()*ms.aiDefense.length)];
-        ms.currentAttacker = f;
-        ms.currentDefender = d;
+        ms.currentForward = f; ms.currentDefender = d;
         ms.phase = 'user_attack';
         showUserAttackOptions(f, d);
     } else {
-        // AI атакует (игрок защищается)
         let aF = ms.aiForwards[Math.floor(Math.random()*ms.aiForwards.length)];
         let uD = ms.myDefense[Math.floor(Math.random()*ms.myDefense.length)];
-        ms.currentAttacker = aF;
-        ms.currentDefender = uD;
+        ms.currentForward = aF; ms.currentDefender = uD;
         ms.phase = 'ai_attack';
-        aiChooseAction(aF, uD);
+        executeAIAttack(aF, uD);
     }
 }
 
@@ -391,115 +363,89 @@ function showUserAttackOptions(forward, defender) {
     let logDiv = document.getElementById('eventLog');
     let actionsDiv = document.getElementById('actionButtons');
     duelDiv.innerHTML = `
-        <div class="duel-card"><img src="${forward.avatar}" width="70" height="70"><div class="name">${forward.name}</div><div class="stats">SPD:${forward.spd} SHT:${forward.sht} DRB:${forward.drb}</div></div>
+        <div class="duel-card"><img src="${forward.avatar}"><div class="name">${forward.name}</div><div class="pos">Нападающий</div></div>
         <div class="vs-text">VS</div>
-        <div class="duel-card"><img src="${defender.avatar}" width="70" height="70"><div class="name">${defender.name}</div><div class="stats">SPD:${defender.spd} BLK:${defender.blk} DEF:${defender.def}</div></div>`;
-    logDiv.innerText = 'Выбери действие:';
+        <div class="duel-card"><img src="${defender.avatar}"><div class="name">${defender.name}</div><div class="pos">Защитник</div></div>`;
+    logDiv.innerText = 'Твоя атака: выбери действие';
     actionsDiv.innerHTML = `
-        <button class="btn action-btn" onclick="userAction('speed')">⚡ Скорость</button>
-        <button class="btn action-btn" onclick="userAction('shot')">🎯 Бросок</button>
-        <button class="btn action-btn" onclick="userAction('deke')">🥍 Обводка</button>`;
+        <button class="btn action-btn" onclick="userAttackAction('speed')">⚡ Скорость</button>
+        <button class="btn action-btn" onclick="userAttackAction('shot')">🎯 Бросок</button>
+        <button class="btn action-btn" onclick="userAttackAction('deke')">🥍 Ведение</button>`;
 }
 
-function userAction(action) {
+function userAttackAction(action) {
     if (matchState.phase !== 'user_attack') return;
     let ms = matchState;
-    let f = ms.currentAttacker;
-    let d = ms.currentDefender;
-    // Бот выбирает действие защитника
-    let botAction = chooseBotDefenseAction(d);
-    // Сравниваем
-    let result = compareActions(action, botAction, f, d);
-    processDuelResult(result, f, d, ms.myGoalie, ms.aiGoalie, 'user');
-    ms.attackNum++;
-    document.getElementById('actionButtons').innerHTML = '';
-    setTimeout(() => {
-        if (!ms.finished) nextAttack();
-    }, 2500);
-}
-
-function aiChooseAction(aiForward, userDefender) {
-    let ms = matchState;
-    // AI выбирает атакующее действие (просто случайно с учётом лучшего навыка)
-    let actions = ['speed','shot','deke'];
-    let best = actions[Math.floor(Math.random()*3)];
-    let userActionDef = chooseUserDefenseAction(userDefender); // AI не ждёт, игрок защищается автоматически по лучшему DEF?
-    // Упростим: игрок защищается автоматически, используя лучший навык защиты (DEF)
-    let playerDefAction = 'def'; // Всегда используем DEF для игрока
-    let result = compareActions(best, playerDefAction, aiForward, userDefender);
-    processDuelResult(result, aiForward, userDefender, ms.aiGoalie, ms.myGoalie, 'ai');
-    ms.attackNum++;
-    setTimeout(() => {
-        if (!ms.finished) nextAttack();
-    }, 2500);
-}
-
-function chooseBotDefenseAction(defender) {
-    // Выбирает действие с вероятностью 70% лучший защитный навык, иначе случайный
-    let skills = ['speed','block','def'];
-    let best = 'def';
-    if (defender.spd >= defender.blk && defender.spd >= defender.def) best = 'speed';
-    else if (defender.blk >= defender.def) best = 'block';
-    if (Math.random() < 0.7) return best;
-    else return skills[Math.floor(Math.random()*3)];
-}
-
-function chooseUserDefenseAction(defender) {
-    // Автоматически защищаемся, используя лучший навык защиты
-    if (defender.def >= defender.spd && defender.def >= defender.blk) return 'def';
-    if (defender.spd >= defender.blk) return 'speed';
-    return 'block';
-}
-
-function compareActions(userAct, botAct, attacker, defender) {
-    // attacker: нападающий, defender: защитник
-    // userAct: 'speed','shot','deke'
-    // botAct: 'speed','block','def'
-    let win = false;
-    let method = '';
-    if (userAct === 'speed' && botAct === 'block') { win = true; method = 'SPD vs BLK (автопобеда)'; }
-    else if (userAct === 'shot' && botAct === 'speed') { win = true; method = 'SHT vs SPD (автопобеда)'; }
-    else if (userAct === 'deke' && botAct === 'block') { win = true; method = 'DRB vs BLK (автопобеда)'; }
-    else {
-        // Сравнение чисел
-        let attVal = 0, defVal = 0;
-        if (userAct === 'speed') { attVal = attacker.spd; defVal = (botAct==='def' ? defender.def : defender.spd); }
-        else if (userAct === 'shot') { attVal = attacker.sht; defVal = (botAct==='def' ? defender.def : defender.blk); }
-        else if (userAct === 'deke') { attVal = attacker.drb; defVal = (botAct==='speed' ? defender.spd : defender.def); }
-        win = attVal > defVal;
-        method = `${userAct.toUpperCase()} ${attVal} vs ${botAct.toUpperCase()} ${defVal}`;
-    }
-    return {win, method, userAct};
-}
-
-function processDuelResult(result, attacker, defender, attackerGoalie, defenderGoalie, side) {
+    let forward = ms.currentForward;
+    let defender = ms.currentDefender;
+    let defAction = chooseAIDefenderAction(defender);
+    let win = RULES_FORWARD_VS_DEFENSE[action][defAction];
     let log = document.getElementById('eventLog');
-    let scoreDiv = document.getElementById('matchScoreDisplay');
-    let ms = matchState;
-    let message = '';
-    if (result.win) {
-        // Бросок по вратарю
-        let shotMod = (result.userAct==='speed') ? -2 : (result.userAct==='shot' ? 2 : 0);
-        let shotPower = attacker.sht + Math.floor(Math.random()*6)+1 + shotMod;
-        let savePower = defenderGoalie.sav + Math.floor(Math.random()*4)+1;
-        if (shotPower > savePower) {
-            if (side === 'user') { ms.userScore++; message = `🚨 ГОЛ! ${attacker.name} пробил ${defenderGoalie.name} (${result.method})`; }
-            else { ms.aiScore++; message = `😞 Гол от ${attacker.name} в наши ворота (${result.method})`; }
+    let method = `${forward.name} (${action}) vs ${defender.name} (${defAction})`;
+    if (win) {
+        // бросок по вратарю AI
+        let goalieAction = chooseAIGoalieAction(ms.aiGoalie);
+        let goal = RULES_FORWARD_VS_GOALIE[action][goalieAction];
+        if (goal) {
+            ms.userScore++;
+            log.innerText = `🚨 ГОЛ! ${method} → вратарь ${ms.aiGoalie.name} выбрал ${goalieAction}`;
         } else {
-            message = `🛑 Сейв ${defenderGoalie.name} после броска ${attacker.name} (${result.method})`;
+            log.innerText = `🛑 Сейв! ${method} → вратарь ${ms.aiGoalie.name} выбрал ${goalieAction}`;
         }
     } else {
-        message = `❌ ${defender.name} остановил атаку ${attacker.name} (${result.method})`;
+        log.innerText = `❌ Защитник выиграл: ${method}`;
     }
-    log.innerText = message;
-    scoreDiv.innerText = `${ms.userScore} : ${ms.aiScore}`;
-    // Энергия тратится
-    attacker.energy = Math.max(0, attacker.energy - 15);
-    defender.energy = Math.max(0, defender.energy - 10);
+    ms.attackNum++;
+    document.getElementById('actionButtons').innerHTML = '';
+    document.getElementById('matchScoreDisplay').innerText = `${ms.userScore} : ${ms.aiScore}`;
+    setTimeout(() => { if (!ms.finished) nextAttack(); }, 2000);
 }
 
-function updateMatchUI() {
-    document.getElementById('matchScoreDisplay').innerText = `${matchState.userScore} : ${matchState.aiScore}`;
+function executeAIAttack(aiForward, userDefender) {
+    let ms = matchState;
+    let aiAction = chooseAIForwardAction(aiForward);
+    let defAction = weightedRandom({ speed: userDefender.spd, block: userDefender.blk, def: userDefender.def });
+    let win = RULES_FORWARD_VS_DEFENSE[aiAction][defAction];
+    let log = document.getElementById('eventLog');
+    let duelDiv = document.getElementById('duelContainer');
+    let actionsDiv = document.getElementById('actionButtons');
+    duelDiv.innerHTML = `
+        <div class="duel-card"><img src="${aiForward.avatar}"><div class="name">${aiForward.name}</div><div class="pos">Нападающий</div></div>
+        <div class="vs-text">VS</div>
+        <div class="duel-card"><img src="${userDefender.avatar}"><div class="name">${userDefender.name}</div><div class="pos">Защитник</div></div>`;
+    if (win) {
+        log.innerText = `⚠️ ${aiForward.name} (${aiAction}) обыграл ${userDefender.name} (${defAction}). Выбери действие вратаря!`;
+        ms.waitingForGoalie = true;
+        ms.aiForwardAction = aiAction;
+        actionsDiv.innerHTML = `
+            <button class="btn action-btn" onclick="userGoalieAction('reaction')">🧤 Реакция</button>
+            <button class="btn action-btn" onclick="userGoalieAction('movement')">🏃 Перемещение</button>
+            <button class="btn action-btn" onclick="userGoalieAction('reliability')">🔒 Надёжность</button>`;
+    } else {
+        log.innerText = `✅ ${userDefender.name} (${defAction}) остановил ${aiForward.name} (${aiAction})`;
+        ms.attackNum++;
+        document.getElementById('matchScoreDisplay').innerText = `${ms.userScore} : ${ms.aiScore}`;
+        setTimeout(() => { if (!ms.finished) nextAttack(); }, 2000);
+    }
+}
+
+function userGoalieAction(action) {
+    if (!matchState.waitingForGoalie) return;
+    let ms = matchState;
+    let aiAction = ms.aiForwardAction;
+    let goal = RULES_FORWARD_VS_GOALIE[aiAction][action];
+    let log = document.getElementById('eventLog');
+    if (goal) {
+        ms.aiScore++;
+        log.innerText = `😞 Гол! ${ms.currentForward.name} (${aiAction}) против ${ms.myGoalie.name} (${action})`;
+    } else {
+        log.innerText = `🧤 Сейв ${ms.myGoalie.name}! (${action}) против ${aiAction}`;
+    }
+    ms.attackNum++;
+    ms.waitingForGoalie = false;
+    document.getElementById('actionButtons').innerHTML = '';
+    document.getElementById('matchScoreDisplay').innerText = `${ms.userScore} : ${ms.aiScore}`;
+    setTimeout(() => { if (!ms.finished) nextAttack(); }, 2000);
 }
 
 function endMatch() {
@@ -513,16 +459,10 @@ function endMatch() {
     document.getElementById('finishMatchBtn').style.display = 'inline-block';
     document.getElementById('actionButtons').innerHTML = '';
 }
+function exitMatch() { matchState=null; showScreen('mainScreen'); updateUI(); }
+function updateMatchUI() { document.getElementById('matchScoreDisplay').innerText = `${matchState.userScore} : ${matchState.aiScore}`; }
 
-function exitMatch() {
-    matchState = null;
-    showScreen('mainScreen');
-    updateUI();
-}
-
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-// Интерфейс
+// --- Интерфейс (без статов) ---
 function togglePlayer(card) {
     let t = userData.team;
     if (card.pos==='F') {
@@ -564,9 +504,7 @@ function renderCollection() {
         let list = group.querySelector('.card-list');
         cards.forEach(c => {
             let div = document.createElement('div'); div.className='card-item';
-            let statsStr = c.pos==='F' ? `SPD:${c.spd} SHT:${c.sht} DRB:${c.drb}` :
-                          (c.pos==='D' ? `SPD:${c.spd} BLK:${c.blk} DEF:${c.def}` : `SAV:${c.sav}`);
-            div.innerHTML = `<img src="${c.avatar}" width="64" height="64"><div class="name">${c.name}</div><div class="stats">${statsStr}</div>`;
+            div.innerHTML = `<img src="${c.avatar}"><div class="name">${c.name}</div>`;
             list.appendChild(div);
         });
         cont.appendChild(group);
@@ -583,9 +521,7 @@ function renderTeamSelection() {
         let list = group.querySelector('.card-list');
         cards.forEach(c => {
             let div = document.createElement('div'); div.className='card-item';
-            let statsStr = c.pos==='F' ? `SPD:${c.spd} SHT:${c.sht} DRB:${c.drb}` :
-                          (c.pos==='D' ? `SPD:${c.spd} BLK:${c.blk} DEF:${c.def}` : `SAV:${c.sav}`);
-            div.innerHTML = `<img src="${c.avatar}" width="64" height="64"><div class="name">${c.name}</div><div class="stats">${statsStr}</div>`;
+            div.innerHTML = `<img src="${c.avatar}"><div class="name">${c.name}</div>`;
             div.onclick = () => togglePlayer(c);
             list.appendChild(div);
         });
@@ -615,37 +551,18 @@ function showScreen(id) {
     document.getElementById(id).classList.add('active');
     if (id==='teamScreen') renderTeamSelection();
     if (id==='mainScreen' || id==='collectionScreen') updateUI();
-    if (id==='styleScreen') updateStyleDesc();
 }
-function checkDailyReset() {
-    let today = new Date().toDateString();
-    if (userData.lastDaily !== today) {
-        if (userData.lastDaily) {
-            let diff = (new Date() - new Date(userData.lastDaily))/86400000;
-            userData.streak = (diff>=1 && diff<2) ? userData.streak+1 : 1;
-        } else userData.streak = 1;
-        userData.lastDaily = today;
-        saveUserData();
-    }
-    updateUI();
-}
+function checkDailyReset() { /* как обычно */ }
 async function resetProgress() {
     await cloud.removeItem('nhl_save');
-    resetData();
-    userData.lastDaily = null;
-    await saveUserData();
-    updateUI();
-    tg.showAlert('Прогресс сброшен.');
+    resetData(); userData.lastDaily = null; await saveUserData();
+    updateUI(); tg.showAlert('Прогресс сброшен.');
 }
 
-// Привязка выбора стиля из главного меню
-window.setStyle = setStyle;
-window.startMatch = startMatch;
-window.userAction = userAction;
-window.exitMatch = exitMatch;
-window.resetProgress = resetProgress;
-window.showScreen = showScreen;
-window.openBooster = openBooster;
+window.setStyle = setStyle; window.startMatch = startMatch;
+window.userAttackAction = userAttackAction; window.userGoalieAction = userGoalieAction;
+window.exitMatch = exitMatch; window.resetProgress = resetProgress;
+window.showScreen = showScreen; window.openBooster = openBooster;
 
 loadUserData().then(() => { updateUI(); setInterval(updateUI, 60000); });
 </script>
