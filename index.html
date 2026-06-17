@@ -23,14 +23,14 @@
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 14px 24px;
-            font-size: 16px;
+            padding: 14px 20px;
+            font-size: 14px;
             font-weight: 700;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
             display: inline-block;
             text-align: center;
-            margin: 6px;
+            margin: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -38,32 +38,20 @@
         .btn.secondary {
             background: #1A1A1A;
             color: #FFFFFF;
-            border: 1px solid #333333;
+            border: 1px solid #333;
         }
 
-        .card-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: flex-start;
-            margin-bottom: 16px;
-        }
-        .position-group {
-            width: 100%;
-            margin-bottom: 12px;
-        }
+        .card-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; margin-bottom: 12px; }
+        .position-group { width: 100%; margin-bottom: 10px; }
         .position-group h4 {
-            color: #CCCCCC;
-            margin: 8px 0 4px;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #CCCCCC; margin: 8px 0 4px; font-size: 13px;
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
         .card-item {
             background: #1A1A1A;
             border-radius: 12px;
-            padding: 10px 6px;
+            padding: 8px 6px;
             width: 100px;
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.8);
@@ -71,87 +59,70 @@
             transition: transform 0.2s;
             border: 1px solid #333;
             cursor: pointer;
+            user-select: none;
         }
         .card-item:active { transform: scale(0.96); }
-        .card-item img {
-            width: 64px; height: 64px; border-radius: 50%; object-fit: cover; background: #2A2A2A;
-            border: 2px solid #555;
+        .card-item .avatar {
+            width: 64px; height: 64px; border-radius: 50%; margin: 0 auto;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; font-weight: 800; color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            position: relative;
+            border: 2px solid #888;
         }
-        .card-item .name {
-            font-weight: 600; font-size: 11px; margin: 6px 0 4px; color: #FFFFFF; line-height: 1.2;
+        .card-item .pos-badge {
+            position: absolute; bottom: -2px; right: -4px;
+            background: #C8102E; color: white; width: 20px; height: 20px;
+            border-radius: 50%; font-size: 10px; line-height: 20px; font-weight: bold;
+            border: 2px solid #000;
         }
+        .card-item .name { font-weight: 600; font-size: 10px; margin: 6px 0 2px; color: #FFFFFF; line-height: 1.2; }
         .card-item .stats {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            font-size: 14px;
-            font-weight: 700;
+            display: flex; justify-content: center; gap: 4px; font-size: 13px; font-weight: 700; flex-wrap: wrap;
         }
-        .stat-o { color: #00FF00; }
-        .stat-d { color: #FF4444; }
-        .stat-p { color: #4488FF; }
+        .stat-o { color: #00FF00; } .stat-d { color: #FF4444; } .stat-p { color: #4488FF; }
 
-        .info-block {
-            background: #111111;
-            padding: 12px;
-            border-radius: 10px;
-            margin: 10px 0;
-            border: 1px solid #333;
+        .duplicate-count {
+            position: absolute; top: -4px; right: -4px;
+            background: #FFD700; color: black; width: 20px; height: 20px;
+            border-radius: 50%; font-size: 11px; line-height: 20px; font-weight: bold;
+            border: 2px solid black;
         }
+
+        .info-block { background: #111; padding: 12px; border-radius: 10px; margin: 10px 0; border: 1px solid #333; }
         .team-preview {
-            background: #0D0D0D;
-            border-left: 4px solid #C8102E;
-            padding: 10px;
-            margin: 12px 0;
-            font-size: 13px;
-            border-radius: 6px;
+            background: #0D0D0D; border-left: 4px solid #C8102E; padding: 10px;
+            margin: 12px 0; font-size: 13px; border-radius: 6px;
         }
-        .streak-badge {
-            background: #C8102E;
-            color: white;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 13px;
-        }
+        .streak-badge { background: #C8102E; color: white; padding: 3px 10px; border-radius: 20px; font-weight: bold; font-size: 13px; }
 
-        .duel-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
+        .duel-container { display: flex; align-items: center; justify-content: center; gap: 20px; margin: 20px 0; flex-wrap: wrap; }
         .duel-card {
-            background: #1A1A1A;
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-            width: 130px;
-            border: 2px solid #333;
+            background: #1A1A1A; border-radius: 12px; padding: 12px; text-align: center;
+            width: 120px; border: 2px solid #333;
         }
-        .duel-card img {
-            width: 80px; height: 80px; border-radius: 50%; border: 2px solid #888;
+        .duel-card .avatar {
+            width: 70px; height: 70px; border-radius: 50%; margin: 0 auto;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; font-weight: 800; color: white;
+            border: 2px solid #888;
         }
-        .duel-card .name { font-weight: bold; font-size: 14px; margin: 8px 0 4px; }
-        .duel-card .stats { font-size: 12px; }
+        .duel-card .name { font-weight: bold; font-size: 13px; margin: 8px 0 4px; }
+        .duel-card .stats { font-size: 11px; }
         .vs-text {
             font-size: 28px; font-weight: 800; color: #C8102E;
             text-shadow: 0 0 10px rgba(200,16,46,0.5);
         }
         .event-log {
-            background: #0A0A0A;
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 12px;
-            font-size: 14px;
-            text-align: center;
-            min-height: 40px;
-            border: 1px solid #333;
+            background: #0A0A0A; border-radius: 8px; padding: 10px; margin-top: 12px;
+            font-size: 14px; text-align: center; min-height: 40px; border: 1px solid #333;
         }
-        .match-score {
-            font-size: 18px; font-weight: bold; margin: 8px 0; text-align: center;
+        .match-score { font-size: 20px; font-weight: bold; margin: 8px 0; text-align: center; }
+        .merge-zone {
+            background: #111; border: 2px dashed #C8102E; border-radius: 12px;
+            padding: 16px; margin: 12px 0; text-align: center;
         }
     </style>
 </head>
@@ -177,10 +148,16 @@
     <div id="dailyTimer" style="margin-top:14px; font-size:13px; color:#AAAAAA;"></div>
 </div>
 
-<!-- Экран коллекции -->
+<!-- Экран коллекции + слияние дубликатов -->
 <div id="collectionScreen" class="screen">
     <h2>📦 Твои карты</h2>
     <div id="collectionContainer"></div>
+    <div class="merge-zone" id="mergeZone" style="display:none;">
+        <p>🔁 Выбери две одинаковые карты для слияния</p>
+        <div id="mergeCards" style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap;"></div>
+        <button class="btn" id="mergeBtn" onclick="mergeCards()" disabled>Объединить (+1 к случайному параметру)</button>
+        <button class="btn secondary" onclick="cancelMerge()">Отмена</button>
+    </div>
     <button class="btn" onclick="showScreen('mainScreen')">⬅ На главную</button>
 </div>
 
@@ -217,86 +194,95 @@ const cloud = {
     setItem(k,v) { return new Promise(r => tg.CloudStorage.setItem(k, v, e => r(!e))); }
 };
 
-function fallbackImg(name) {
+// Генератор аватара с инициалами (полностью локальный)
+function generateAvatar(name, pos) {
     let initials = name.split(' ').slice(0,2).map(w=>w.charAt(0)).join('');
-    let c = document.createElement('canvas'); c.width=64; c.height=64;
-    let ctx = c.getContext('2d');
-    ctx.fillStyle='#1A1A1A'; ctx.fillRect(0,0,64,64);
-    ctx.fillStyle='#FFF'; ctx.font='bold 24px "Segoe UI"'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(initials,32,32);
-    return c.toDataURL();
+    let canvas = document.createElement('canvas'); canvas.width=128; canvas.height=128;
+    let ctx = canvas.getContext('2d');
+    // Градиентный фон
+    let grd = ctx.createLinearGradient(0,0,128,128);
+    let colors = ['#1e3c72','#2a5298']; // базовый, можно менять по позиции
+    if (pos==='F') colors = ['#8B0000','#C8102E'];
+    else if (pos==='D') colors = ['#004d40','#00897b'];
+    else if (pos==='G') colors = ['#4a148c','#7b1fa2'];
+    grd.addColorStop(0, colors[0]); grd.addColorStop(1, colors[1]);
+    ctx.fillStyle = grd; ctx.fillRect(0,0,128,128);
+    // Инициалы
+    ctx.fillStyle = 'white'; ctx.font = 'bold 56px "Segoe UI"'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(initials, 64, 64);
+    return canvas.toDataURL();
 }
 
-// ========== Расширенный пул карт (более 80 игроков) ==========
+// ========== База карт (реальные имена, но фото генерируются) ==========
 const cardPool = {
     common: [
-        {name:"Баркли Гудроу",pos:"F",O:58,D:62,P:70,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8479350.jpg"},
-        {name:"Мэтт Мартин",pos:"F",O:55,D:60,P:78,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8471742.jpg"},
-        {name:"Люк Гленденинг",pos:"F",O:54,D:68,P:65,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475189.jpg"},
-        {name:"Райан Ривз",pos:"F",O:50,D:58,P:85,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8471815.jpg"},
-        {name:"Дерек Форборт",pos:"D",O:52,D:72,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477428.jpg"},
-        {name:"Джош Браун",pos:"D",O:48,D:65,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478463.jpg"},
-        {name:"Ник Силер",pos:"D",O:46,D:70,P:72,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476372.jpg"},
-        {name:"Джейкоб Миддлтон",pos:"D",O:50,D:68,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476905.jpg"},
-        {name:"Кейси Десмит",pos:"G",O:40,D:68,P:60,SV:72,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477463.jpg"},
-        {name:"Кевин Ланкинен",pos:"G",O:42,D:66,P:62,SV:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477982.jpg"},
-        {name:"Майкл Амадио",pos:"F",O:56,D:60,P:68,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477504.jpg"},
-        {name:"Ник Казинс",pos:"F",O:57,D:61,P:66,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475168.jpg"},
-        {name:"Зак Сэнфорд",pos:"F",O:55,D:59,P:69,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476892.jpg"},
-        {name:"Джош Андерсон",pos:"F",O:60,D:63,P:80,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476875.jpg"},
-        {name:"Тайлер Мотт",pos:"F",O:52,D:65,P:67,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477425.jpg"},
-        {name:"Мэтт Руни",pos:"F",O:53,D:64,P:71,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476871.jpg"},
-        {name:"Джейк Лещишин",pos:"F",O:58,D:60,P:66,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8479443.jpg"},
-        {name:"Томаш Носек",pos:"F",O:56,D:63,P:68,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476883.jpg"},
-        {name:"Джастин Браун",pos:"F",O:62,D:67,P:72,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8470606.jpg"},
-        {name:"Кайл Клиффорд",pos:"F",O:51,D:59,P:83,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8473431.jpg"},
-        {name:"Бренден Диллон",pos:"D",O:54,D:74,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8474581.jpg"},
-        {name:"Эрик Гудбрансон",pos:"D",O:52,D:76,P:78,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475794.jpg"},
-        {name:"Брэйден Макнэбб",pos:"D",O:50,D:75,P:77,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476923.jpg"},
-        {name:"Яни Хаканпаа",pos:"D",O:48,D:78,P:80,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476873.jpg"},
-        {name:"Джоэль Эдмундсон",pos:"D",O:53,D:73,P:75,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476346.jpg"},
-        {name:"Джорди Бенн",pos:"D",O:49,D:71,P:73,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8474507.jpg"},
-        {name:"Коннор Клифтон",pos:"D",O:51,D:69,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477317.jpg"},
-        {name:"Джейк Уолман",pos:"D",O:56,D:68,P:70,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477977.jpg"},
-        {name:"Спенсер Мартин",pos:"G",O:41,D:65,P:61,SV:71,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476926.jpg"},
-        {name:"Магнус Хелльберг",pos:"G",O:39,D:64,P:63,SV:70,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475255.jpg"},
+        {name:"Баркли Гудроу",pos:"F",O:58,D:62,P:70},
+        {name:"Мэтт Мартин",pos:"F",O:55,D:60,P:78},
+        {name:"Люк Гленденинг",pos:"F",O:54,D:68,P:65},
+        {name:"Райан Ривз",pos:"F",O:50,D:58,P:85},
+        {name:"Дерек Форборт",pos:"D",O:52,D:72,P:74},
+        {name:"Джош Браун",pos:"D",O:48,D:65,P:76},
+        {name:"Ник Силер",pos:"D",O:46,D:70,P:72},
+        {name:"Джейкоб Миддлтон",pos:"D",O:50,D:68,P:74},
+        {name:"Кейси Десмит",pos:"G",O:40,D:68,P:60,SV:72},
+        {name:"Кевин Ланкинен",pos:"G",O:42,D:66,P:62,SV:74},
+        {name:"Майкл Амадио",pos:"F",O:56,D:60,P:68},
+        {name:"Ник Казинс",pos:"F",O:57,D:61,P:66},
+        {name:"Зак Сэнфорд",pos:"F",O:55,D:59,P:69},
+        {name:"Джош Андерсон",pos:"F",O:60,D:63,P:80},
+        {name:"Тайлер Мотт",pos:"F",O:52,D:65,P:67},
+        {name:"Мэтт Руни",pos:"F",O:53,D:64,P:71},
+        {name:"Джейк Лещишин",pos:"F",O:58,D:60,P:66},
+        {name:"Томаш Носек",pos:"F",O:56,D:63,P:68},
+        {name:"Джастин Браун",pos:"F",O:62,D:67,P:72},
+        {name:"Кайл Клиффорд",pos:"F",O:51,D:59,P:83},
+        {name:"Бренден Диллон",pos:"D",O:54,D:74,P:76},
+        {name:"Эрик Гудбрансон",pos:"D",O:52,D:76,P:78},
+        {name:"Брэйден Макнэбб",pos:"D",O:50,D:75,P:77},
+        {name:"Яни Хаканпаа",pos:"D",O:48,D:78,P:80},
+        {name:"Джоэль Эдмундсон",pos:"D",O:53,D:73,P:75},
+        {name:"Джорди Бенн",pos:"D",O:49,D:71,P:73},
+        {name:"Коннор Клифтон",pos:"D",O:51,D:69,P:74},
+        {name:"Джейк Уолман",pos:"D",O:56,D:68,P:70},
+        {name:"Спенсер Мартин",pos:"G",O:41,D:65,P:61,SV:71},
+        {name:"Магнус Хелльберг",pos:"G",O:39,D:64,P:63,SV:70},
     ],
     silver: [
-        {name:"Брэндон Саад",pos:"F",O:72,D:65,P:70,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475283.jpg"},
-        {name:"Джейк Дибраск",pos:"F",O:74,D:62,P:68,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478425.jpg"},
-        {name:"Адам Ларссон",pos:"D",O:60,D:82,P:78,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476855.jpg"},
-        {name:"Фредрик Андерсен",pos:"G",O:45,D:78,P:72,SV:82,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475883.jpg"},
-        {name:"Тайлер Тоффоли",pos:"F",O:76,D:64,P:72,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475268.jpg"},
-        {name:"Эндрю Коглиано",pos:"F",O:68,D:72,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8471729.jpg"},
-        {name:"Джейми Олексяк",pos:"D",O:55,D:80,P:82,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475798.jpg"},
-        {name:"Антти Раанта",pos:"G",O:43,D:76,P:74,SV:80,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475208.jpg"},
-        {name:"Конор Гарланд",pos:"F",O:78,D:63,P:66,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478872.jpg"},
-        {name:"Мэтт Дамба",pos:"D",O:68,D:78,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475393.jpg"},
+        {name:"Брэндон Саад",pos:"F",O:72,D:65,P:70},
+        {name:"Джейк Дибраск",pos:"F",O:74,D:62,P:68},
+        {name:"Адам Ларссон",pos:"D",O:60,D:82,P:78},
+        {name:"Фредрик Андерсен",pos:"G",O:45,D:78,P:72,SV:82},
+        {name:"Тайлер Тоффоли",pos:"F",O:76,D:64,P:72},
+        {name:"Эндрю Коглиано",pos:"F",O:68,D:72,P:74},
+        {name:"Джейми Олексяк",pos:"D",O:55,D:80,P:82},
+        {name:"Антти Раанта",pos:"G",O:43,D:76,P:74,SV:80},
+        {name:"Конор Гарланд",pos:"F",O:78,D:63,P:66},
+        {name:"Мэтт Дамба",pos:"D",O:68,D:78,P:76},
     ],
     gold: [
-        {name:"Брэйден Пойнт",pos:"F",O:88,D:74,P:70,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478475.jpg"},
-        {name:"Чарли Макэвой",pos:"D",O:78,D:88,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478431.jpg"},
-        {name:"Юусе Сарос",pos:"G",O:50,D:85,P:78,SV:90,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477424.jpg"},
-        {name:"Брэди Ткачук",pos:"F",O:90,D:80,P:88,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8479325.jpg"},
-        {name:"Джонни Годро",pos:"F",O:92,D:72,P:65,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476319.jpg"},
-        {name:"Ши Теодор",pos:"D",O:76,D:86,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476881.jpg"},
-        {name:"Тристан Джарри",pos:"G",O:48,D:83,P:80,SV:88,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477464.jpg"},
+        {name:"Брэйден Пойнт",pos:"F",O:88,D:74,P:70},
+        {name:"Чарли Макэвой",pos:"D",O:78,D:88,P:76},
+        {name:"Юусе Сарос",pos:"G",O:50,D:85,P:78,SV:90},
+        {name:"Брэди Ткачук",pos:"F",O:90,D:80,P:88},
+        {name:"Джонни Годро",pos:"F",O:92,D:72,P:65},
+        {name:"Ши Теодор",pos:"D",O:76,D:86,P:74},
+        {name:"Тристан Джарри",pos:"G",O:48,D:83,P:80,SV:88},
     ],
     elite: [
-        {name:"Александр Барков",pos:"F",O:92,D:88,P:74,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477493.jpg"},
-        {name:"Виктор Хедман",pos:"D",O:84,D:94,P:80,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475167.jpg"},
-        {name:"Андрей Василевский",pos:"G",O:52,D:92,P:82,SV:94,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476882.jpg"},
-        {name:"Мэттью Ткачук",pos:"F",O:94,D:82,P:86,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8479314.jpg"},
-        {name:"Роман Йоси",pos:"D",O:88,D:92,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8475200.jpg"},
-        {name:"Коннор Хеллебак",pos:"G",O:50,D:90,P:84,SV:93,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476945.jpg"},
+        {name:"Александр Барков",pos:"F",O:92,D:88,P:74},
+        {name:"Виктор Хедман",pos:"D",O:84,D:94,P:80},
+        {name:"Андрей Василевский",pos:"G",O:52,D:92,P:82,SV:94},
+        {name:"Мэттью Ткачук",pos:"F",O:94,D:82,P:86},
+        {name:"Роман Йоси",pos:"D",O:88,D:92,P:76},
+        {name:"Коннор Хеллебак",pos:"G",O:50,D:90,P:84,SV:93},
     ],
     legendary: [
-        {name:"Коннор Макдэвид",pos:"F",O:99,D:85,P:78,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478402.jpg"},
-        {name:"Кейл Макар",pos:"D",O:95,D:92,P:80,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8480069.jpg"},
-        {name:"Игорь Шестеркин",pos:"G",O:55,D:90,P:82,SV:96,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478010.jpg"},
-        {name:"Нэтан Маккиннон",pos:"F",O:98,D:88,P:82,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8477492.jpg"},
-        {name:"Леон Драйзайтль",pos:"F",O:97,D:86,P:84,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8476474.jpg"},
-        {name:"Кирилл Капризов",pos:"F",O:96,D:80,P:76,img:"https://nhl.bamgrid.com/images/headshots/current/168x168/8478365.jpg"},
+        {name:"Коннор Макдэвид",pos:"F",O:99,D:85,P:78},
+        {name:"Кейл Макар",pos:"D",O:95,D:92,P:80},
+        {name:"Игорь Шестеркин",pos:"G",O:55,D:90,P:82,SV:96},
+        {name:"Нэтан Маккиннон",pos:"F",O:98,D:88,P:82},
+        {name:"Леон Драйзайтль",pos:"F",O:97,D:86,P:84},
+        {name:"Кирилл Капризов",pos:"F",O:96,D:80,P:76},
     ]
 };
 
@@ -309,6 +295,9 @@ let userData = {
     lastDaily:null, streak:0
 };
 
+// Слияние
+let mergeSelection = [];
+
 // ========== Стартовый набор (уникальные 4F,4D,2G) ==========
 function giveStarterCards() {
     const common = cardPool.common;
@@ -317,7 +306,8 @@ function giveStarterCards() {
     const goalies = common.filter(c=>c.pos==='G').slice(0,2);
     let id = Date.now();
     [...forwards, ...defense, ...goalies].forEach(c => {
-        userData.cards.push({...c, id: id++, fallback: fallbackImg(c.name)});
+        let card = {...c, id: id++, avatar: generateAvatar(c.name, c.pos)};
+        userData.cards.push(card);
     });
 }
 
@@ -333,9 +323,7 @@ async function loadUserData() {
     checkDailyReset();
 }
 
-async function saveUserData() {
-    await cloud.setItem('nhl_save', JSON.stringify(userData));
-}
+async function saveUserData() { await cloud.setItem('nhl_save', JSON.stringify(userData)); }
 
 function resetData() {
     userData.level=1; userData.wins=0; userData.coins=1000; userData.cards=[];
@@ -355,12 +343,10 @@ function checkDailyReset() {
     updateUI();
 }
 
+// ========== Бустеры ==========
 function openBooster() {
     let today = new Date().toDateString();
-    if (userData.lastDaily === today) {
-        tg.showPopup({title:'⏳', message:'Бесплатный бустер уже получен.'});
-        return;
-    }
+    if (userData.lastDaily === today) { tg.showPopup({title:'⏳', message:'Бесплатный бустер уже получен.'}); return; }
     let pools = poolAccess[userData.level];
     let pool = pools[pools.length-1];
     if (userData.streak >= 7 && userData.level<5) {
@@ -370,22 +356,20 @@ function openBooster() {
     let newCards = [];
     for (let i=0; i<3; i++) {
         let card = cardPool[pool][Math.floor(Math.random()*cardPool[pool].length)];
-        newCards.push({...card, id: Date.now()+i, fallback: fallbackImg(card.name)});
+        newCards.push({...card, id: Date.now()+i, avatar: generateAvatar(card.name, card.pos)});
     }
     userData.cards.push(...newCards);
     userData.lastDaily = today;
     if (userData.streak >= 7) userData.streak = 0;
-    saveUserData();
-    updateUI();
+    saveUserData(); updateUI();
     tg.showPopup({title:'🎁 Бустер', message: newCards.map(c=>c.name).join(', ')});
 }
 
-// ========== Матч (улучшенный баланс) ==========
+// ========== Матч (перебалансирован) ==========
 async function startMatch() {
     const t = userData.team;
     if (t.forwards.length!==3 || t.defense.length!==2 || !t.goalie) {
-        tg.showAlert('Собери состав: 3 нап, 2 защ, 1 вратарь');
-        return;
+        tg.showAlert('Собери состав: 3 нап, 2 защ, 1 вратарь'); return;
     }
     showScreen('matchScreen');
     const scoreDiv = document.getElementById('matchScoreDisplay');
@@ -397,6 +381,7 @@ async function startMatch() {
     let ai = generateAITeam(userData.level);
     let userScore = 0, aiScore = 0;
     scoreDiv.innerText = `0 : 0`;
+    let userPressure = 0, aiPressure = 0;
 
     for (let period=1; period<=3; period++) {
         logDiv.innerText = `--- Период ${period} ---`;
@@ -406,13 +391,13 @@ async function startMatch() {
             let aPlayer = [...ai.forwards, ...ai.defense][Math.floor(Math.random()*5)];
             duelDiv.innerHTML = `
                 <div class="duel-card">
-                    <img src="${uPlayer.img}" onerror="this.src='${uPlayer.fallback}'" referrerpolicy="no-referrer">
+                    <div class="avatar" style="background:${uPlayer.avatar.includes('R0lG') ? '' : `url(${uPlayer.avatar})`};"></div>
                     <div class="name">${uPlayer.name}</div>
                     <div class="stats"><span class="stat-o">O:${uPlayer.O}</span> <span class="stat-d">D:${uPlayer.D}</span> <span class="stat-p">P:${uPlayer.P}</span></div>
                 </div>
                 <div class="vs-text">VS</div>
                 <div class="duel-card">
-                    <img src="${aPlayer.img}" onerror="this.src='${aPlayer.fallback||fallbackImg(aPlayer.name)}'" referrerpolicy="no-referrer">
+                    <div class="avatar" style="background:${aPlayer.avatar.includes('R0lG') ? '' : `url(${aPlayer.avatar})`};"></div>
                     <div class="name">${aPlayer.name}</div>
                     <div class="stats"><span class="stat-o">O:${aPlayer.O}</span> <span class="stat-d">D:${aPlayer.D}</span> <span class="stat-p">P:${aPlayer.P}</span></div>
                 </div>
@@ -422,56 +407,50 @@ async function startMatch() {
             let uRoll = Math.floor(Math.random()*6)+1;
             let aRoll = Math.floor(Math.random()*6)+1;
             let eventText = '';
+            // Атака пользователя
             if (uPlayer.O + uRoll > aPlayer.D + aRoll) {
-                // бросок с бонусом +2 за выигранную дуэль
-                let shot = uPlayer.O + Math.floor(Math.random()*6)+1 + 2;
-                let save = ai.goalie.SV + Math.floor(Math.random()*4)+1; // кубик вратаря слабее
-                if (shot > save) {
-                    userW++; eventText = `🚨 ГОЛ! ${uPlayer.name} пробил ${ai.goalie.name}!`;
-                } else {
-                    eventText = `🛑 Сейв ${ai.goalie.name} после броска ${uPlayer.name}`;
-                }
+                userPressure++; aiPressure = Math.max(0, aiPressure-1);
+                let bonus = Math.floor(userPressure/2) * 2; // давление даёт бонус
+                let shot = uPlayer.O + Math.floor(Math.random()*6)+1 + 4 + bonus;
+                if (shot > ai.goalie.SV + 4) { // вратарь без кубика, только SV+4
+                    userW++; userScore++; eventText = `🚨 ГОЛ! ${uPlayer.name} пробил ${ai.goalie.name}!`;
+                    userPressure = 0;
+                } else { eventText = `🛑 Сейв ${ai.goalie.name} после броска ${uPlayer.name}`; }
             } else if (aPlayer.O + aRoll > uPlayer.D + uRoll) {
-                let shot = aPlayer.O + Math.floor(Math.random()*6)+1 + 2;
-                let save = t.goalie.SV + Math.floor(Math.random()*4)+1;
-                if (shot > save) {
-                    aiW++; eventText = `😞 Гол! ${aPlayer.name} забивает ${t.goalie.name}`;
-                } else {
-                    eventText = `🧤 Сейв ${t.goalie.name} после ${aPlayer.name}`;
-                }
+                aiPressure++; userPressure = Math.max(0, userPressure-1);
+                let bonus = Math.floor(aiPressure/2)*2;
+                let shot = aPlayer.O + Math.floor(Math.random()*6)+1 + 4 + bonus;
+                if (shot > t.goalie.SV + 4) {
+                    aiW++; aiScore++; eventText = `😞 Гол! ${aPlayer.name} забивает ${t.goalie.name}`;
+                    aiPressure = 0;
+                } else { eventText = `🧤 Сейв ${t.goalie.name} после ${aPlayer.name}`; }
             } else {
                 eventText = `⚡ Борьба ${uPlayer.name} vs ${aPlayer.name}, без гола`;
+                userPressure = Math.max(0, userPressure-1); aiPressure = Math.max(0, aiPressure-1);
             }
             logDiv.innerText = eventText;
-            await sleep(1500);
+            scoreDiv.innerText = `${userScore} : ${aiScore}`;
+            await sleep(1200);
         }
-        if (userW > aiW) { userScore++; }
-        else if (aiW > userW) { aiScore++; }
-        scoreDiv.innerText = `${userScore} : ${aiScore}`;
         logDiv.innerText = userW>aiW ? `✅ Период ${period} ваш!` : (aiW>userW ? `❌ Период ${period} за AI` : `🤝 Ничья`);
-        await sleep(1000);
+        await sleep(800);
     }
 
     let coinsEarned = 0;
-    if (userScore > aiScore) {
-        coinsEarned=200; userData.wins++;
-        if (userData.wins >= userData.level*100) userData.level++;
-    } else if (userScore < aiScore) { coinsEarned=80; }
-    else { coinsEarned=120; }
+    if (userScore > aiScore) { coinsEarned=200; userData.wins++; if (userData.wins >= userData.level*100) userData.level++; }
+    else if (userScore < aiScore) coinsEarned=80;
+    else coinsEarned=120;
     userData.coins += coinsEarned;
     saveUserData();
     logDiv.innerText += ` | +${coinsEarned} монет`;
     finishBtn.style.display = 'inline-block';
 }
 
-function exitMatch() {
-    showScreen('mainScreen');
-    updateUI();
-}
+function exitMatch() { showScreen('mainScreen'); updateUI(); }
 
 function generateAITeam(level) {
     let pools = poolAccess[level];
-    let all = pools.flatMap(p => cardPool[p]);
+    let all = pools.flatMap(p => cardPool[p].map(c => ({...c, avatar: generateAvatar(c.name, c.pos)})));
     let f = all.filter(c=>c.pos==='F').sort(()=>Math.random()-0.5).slice(0,3);
     let d = all.filter(c=>c.pos==='D').sort(()=>Math.random()-0.5).slice(0,2);
     let g = all.filter(c=>c.pos==='G').sort(()=>Math.random()-0.5)[0];
@@ -480,7 +459,7 @@ function generateAITeam(level) {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// ========== Состав (автосохранение) ==========
+// ========== Состав + слияние дубликатов ==========
 function togglePlayer(card) {
     let t = userData.team;
     if (card.pos==='F') {
@@ -496,9 +475,7 @@ function togglePlayer(card) {
     } else if (card.pos==='G') {
         t.goalie = (t.goalie && t.goalie.id===card.id) ? null : card;
     }
-    displaySelectedTeam();
-    saveUserData();
-    updateTeamPreview();
+    displaySelectedTeam(); saveUserData(); updateTeamPreview();
 }
 
 function displaySelectedTeam() {
@@ -513,30 +490,78 @@ function updateTeamPreview() {
     let prev = document.getElementById('teamPreview');
     if (t.forwards.length===3 && t.defense.length===2 && t.goalie) {
         prev.innerHTML = `⚡ Состав: ${t.forwards[0].name}, ${t.forwards[1].name}, ${t.forwards[2].name} / ${t.defense[0].name}, ${t.defense[1].name} / 🥅 ${t.goalie.name}`;
-    } else {
-        prev.innerHTML = '⚠️ Состав неполный (нужно 3 нап., 2 защ., 1 вр.)';
+    } else prev.innerHTML = '⚠️ Состав неполный';
+}
+
+// Слияние дубликатов
+function startMerge(cardName, copies) {
+    mergeSelection = copies.slice(0,2);
+    document.getElementById('mergeZone').style.display = 'block';
+    let container = document.getElementById('mergeCards');
+    container.innerHTML = '';
+    mergeSelection.forEach(c => {
+        let div = document.createElement('div'); div.className='card-item';
+        div.innerHTML = `<div class="avatar"><img src="${c.avatar}" width="64" height="64"></div><div class="name">${c.name}</div>`;
+        container.appendChild(div);
+    });
+    document.getElementById('mergeBtn').disabled = false;
+}
+
+function mergeCards() {
+    if (mergeSelection.length !== 2) return;
+    let [card1, card2] = mergeSelection;
+    // удаляем card2
+    userData.cards = userData.cards.filter(c => c.id !== card2.id);
+    // ищем card1 и увеличиваем случайный параметр
+    let target = userData.cards.find(c => c.id === card1.id);
+    if (target) {
+        let stats = ['O','D','P'];
+        let stat = stats[Math.floor(Math.random()*stats.length)];
+        target[stat] += 1;
     }
+    mergeSelection = [];
+    document.getElementById('mergeZone').style.display = 'none';
+    saveUserData(); updateUI();
+    tg.showPopup({title:'✅ Слияние', message:'Параметр улучшен!'});
+}
+
+function cancelMerge() {
+    mergeSelection = [];
+    document.getElementById('mergeZone').style.display = 'none';
+    updateUI();
 }
 
 function renderCollection() {
     let container = document.getElementById('collectionContainer');
     container.innerHTML = '';
+    // Группировка по имени + позиция
+    let grouped = {};
+    userData.cards.forEach(c => {
+        let key = c.name + '_' + c.pos;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(c);
+    });
     ['F','D','G'].forEach(pos => {
-        let cards = userData.cards.filter(c=>c.pos===pos);
-        if (cards.length===0) return;
-        let group = document.createElement('div');
-        group.className = 'position-group';
-        let title = pos==='F' ? 'Нападающие' : (pos==='D' ? 'Защитники' : 'Вратари');
+        let groupCards = Object.values(grouped).filter(arr => arr[0].pos===pos);
+        if (groupCards.length===0) return;
+        let group = document.createElement('div'); group.className='position-group';
+        let title = pos==='F'?'Нападающие':(pos==='D'?'Защитники':'Вратари');
         group.innerHTML = `<h4>${title}</h4><div class="card-list"></div>`;
         let list = group.querySelector('.card-list');
-        cards.forEach(c => {
-            let div = document.createElement('div');
-            div.className = 'card-item';
+        groupCards.forEach(copies => {
+            let card = copies[0];
+            let div = document.createElement('div'); div.className='card-item';
             div.innerHTML = `
-                <img src="${c.img}" onerror="this.onerror=null; this.src='${c.fallback||fallbackImg(c.name)}'" referrerpolicy="no-referrer">
-                <div class="name">${c.name}</div>
-                <div class="stats"><span class="stat-o">O:${c.O}</span> <span class="stat-d">D:${c.D}</span> <span class="stat-p">P:${c.P}</span></div>
+                <div class="avatar"><img src="${card.avatar}" width="64" height="64" style="border-radius:50%;"></div>
+                <div class="name">${card.name}</div>
+                <div class="stats"><span class="stat-o">O:${card.O}</span> <span class="stat-d">D:${card.D}</span> <span class="stat-p">P:${card.P}</span></div>
             `;
+            if (copies.length > 1) {
+                let badge = document.createElement('div'); badge.className='duplicate-count';
+                badge.innerText = copies.length;
+                div.appendChild(badge);
+                div.onclick = () => startMerge(card.name, copies);
+            }
             list.appendChild(div);
         });
         container.appendChild(group);
@@ -549,19 +574,13 @@ function renderTeamSelection() {
     ['F','D','G'].forEach(pos => {
         let cards = userData.cards.filter(c=>c.pos===pos);
         if (cards.length===0) return;
-        let group = document.createElement('div');
-        group.className = 'position-group';
-        let title = pos==='F' ? 'Нападающие' : (pos==='D' ? 'Защитники' : 'Вратари');
+        let group = document.createElement('div'); group.className='position-group';
+        let title = pos==='F'?'Нападающие':(pos==='D'?'Защитники':'Вратари');
         group.innerHTML = `<h4>${title}</h4><div class="card-list"></div>`;
         let list = group.querySelector('.card-list');
         cards.forEach(c => {
-            let div = document.createElement('div');
-            div.className = 'card-item';
-            div.innerHTML = `
-                <img src="${c.img}" onerror="this.onerror=null; this.src='${c.fallback||fallbackImg(c.name)}'" referrerpolicy="no-referrer">
-                <div class="name">${c.name}</div>
-                <div class="stats"><span class="stat-o">O:${c.O}</span> <span class="stat-d">D:${c.D}</span> <span class="stat-p">P:${c.P}</span></div>
-            `;
+            let div = document.createElement('div'); div.className='card-item';
+            div.innerHTML = `<div class="avatar"><img src="${c.avatar}" width="64" height="64" style="border-radius:50%;"></div><div class="name">${c.name}</div><div class="stats"><span class="stat-o">O:${c.O}</span> <span class="stat-d">D:${c.D}</span> <span class="stat-p">P:${c.P}</span></div>`;
             div.onclick = () => togglePlayer(c);
             list.appendChild(div);
         });
@@ -575,22 +594,16 @@ function updateUI() {
     document.getElementById('winsCount').innerText = userData.wins;
     document.getElementById('coinsDisplay').innerText = userData.coins;
     document.getElementById('streakDisplay').innerText = `🔥 ${userData.streak} дн.`;
-    if (tg.initDataUnsafe?.user?.first_name) {
-        document.getElementById('greeting').innerText = `Привет, ${tg.initDataUnsafe.user.first_name}!`;
-    }
+    if (tg.initDataUnsafe?.user?.first_name) document.getElementById('greeting').innerText = `Привет, ${tg.initDataUnsafe.user.first_name}!`;
     updateTeamPreview();
     let timerDiv = document.getElementById('dailyTimer');
     let today = new Date().toDateString();
     if (userData.lastDaily === today) {
-        let now = new Date();
-        let tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1);
-        let ms = tomorrow - now;
-        let h = Math.floor(ms/3600000);
-        let m = Math.floor((ms%3600000)/60000);
-        timerDiv.innerText = `⏳ Бесплатный бустер через ${h}ч ${m}мин`;
-    } else {
-        timerDiv.innerText = '🎁 Бесплатный бустер доступен!';
-    }
+        let tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1); tomorrow.setHours(0,0,0,0);
+        let ms = tomorrow - new Date();
+        let h = Math.floor(ms/3600000); let m = Math.floor((ms%3600000)/60000);
+        timerDiv.innerText = `⏳ Бустер через ${h}ч ${m}мин`;
+    } else timerDiv.innerText = '🎁 Бесплатный бустер доступен!';
     renderCollection();
 }
 
