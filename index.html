@@ -277,7 +277,7 @@ function updateStyleDesc() {
     desc.innerText = texts[userData.style] || '';
 }
 
-// --- Улучшенная механика матча с пошаговым отображением ---
+// --- Механика матча (чистый рандом у бота) ---
 const FORWARD_VS_DEFENSE = {
     speed: { speed:'neutral', block:'bonus_fwd', def:'bonus_def' },
     shot:  { speed:'bonus_def', block:'neutral', def:'bonus_fwd' },
@@ -301,22 +301,9 @@ function formatStatChange(base, effective) {
     return effective;
 }
 
-function weightedRandom(weights) {
-    const total = Object.values(weights).reduce((a,b)=>a+b,0);
-    let r = Math.random()*total;
-    for (let key in weights) {
-        r -= weights[key];
-        if (r <= 0) return key;
-    }
-    return Object.keys(weights)[0];
-}
-
 function chooseAIAction(card, possibleActions) {
-    let weights = {};
-    for (let a of possibleActions) {
-        weights[a] = getEffectiveStat(card, a);
-    }
-    return weightedRandom(weights);
+    // Чистый рандом! Бот не анализирует статы.
+    return possibleActions[Math.floor(Math.random() * possibleActions.length)];
 }
 
 async function startMatch() {
@@ -343,7 +330,7 @@ async function startMatch() {
         waitingForGoalie:false, currentAttacker:null, currentDefender:null,
         aiForwardAction:null, aiDefenderAction:null, phase:'',
         attackerMomentum: false,
-        nextStep: null // функция продолжения
+        nextStep: null
     };
     updateMatchUI();
     nextAttack();
@@ -417,14 +404,12 @@ function userAttackAction(action) {
     let defAction = chooseAIAction(d, ['speed','block','def']);
     let resultType = FORWARD_VS_DEFENSE[action][defAction];
     let [fwWin, method, attVal, defVal] = resolveDuel(f, d, action, defAction, resultType, true);
-    // Формируем подробное описание
     let logText = `⚔️ Форвард: <b>${f.name}</b> (${action}) – Атака ${attVal} | Защитник: <b>${d.name}</b> (${defAction}) – Защита ${defVal}<br>`;
     logText += method;
     if (fwWin) {
         ms.attackerMomentum = true;
         logText += `<br>✅ Прорыв! Форвард выходит на ворота.`;
         document.getElementById('eventLog').innerHTML = logText;
-        // кнопка "Далее", которая вызовет бросок по вратарю
         ms.nextStep = () => goaliePhaseForUserAttack(f, action);
         showNextButton();
     } else {
@@ -451,7 +436,6 @@ function goaliePhaseForUserAttack(forward, fwAction) {
         logText += `<br>🚨 ГОЛ!`;
         ms.attackerMomentum = false;
     } else {
-        // добивание
         let [reboundGoal, reboundMethod] = resolveRebound(forward, aiGoalie, fwAction, gAction);
         if (reboundGoal) {
             ms.userScore++;
