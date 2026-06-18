@@ -38,10 +38,13 @@
         .duel-card img { width:70px; height:70px; border-radius:50%; border:2px solid #888; }
         .duel-card .pos { font-size:10px; color:#AAA; }
         .vs-text { font-size:28px; font-weight:800; color:#C8102E; }
-        .event-log { background:#0A0A0A; border-radius:8px; padding:10px; margin-top:12px; font-size:14px; text-align:center; min-height:40px; border:1px solid #333; }
+        .event-log { background:#0A0A0A; border-radius:8px; padding:10px; margin-top:12px; font-size:14px; text-align:center; min-height:60px; border:1px solid #333; line-height:1.5; }
         .match-score { font-size:20px; font-weight:bold; margin:8px 0; text-align:center; }
         .action-btns { display:flex; justify-content:center; gap:10px; margin-top:10px; flex-wrap:wrap; }
         .action-btn { padding:10px 15px; font-size:14px; }
+
+        .bonus-green { color:#00FF00; font-weight:bold; }
+        .penalty-red { color:#FF4444; font-weight:bold; }
     </style>
 </head>
 <body>
@@ -101,7 +104,7 @@
     <div class="match-score" id="matchScoreDisplay">0 : 0</div>
     <div class="duel-container" id="duelContainer"></div>
     <div class="action-btns" id="actionButtons"></div>
-    <div class="event-log" id="eventLog">Выбери действие для атаки</div>
+    <div class="event-log" id="eventLog"></div>
     <button class="btn" id="finishMatchBtn" onclick="exitMatch()" style="display:none;">✅ Завершить</button>
 </div>
 
@@ -274,7 +277,7 @@ function updateStyleDesc() {
     desc.innerText = texts[userData.style] || '';
 }
 
-// --- Улучшенная механика матча ---
+// --- Улучшенная механика матча с пошаговым отображением ---
 const FORWARD_VS_DEFENSE = {
     speed: { speed:'neutral', block:'bonus_fwd', def:'bonus_def' },
     shot:  { speed:'bonus_def', block:'neutral', def:'bonus_fwd' },
@@ -290,6 +293,12 @@ function getEffectiveStat(card, skill) {
     let base = card[skill] || 0;
     let used = (card.usedSkills && card.usedSkills[skill]) || 0;
     return Math.max(0, base - used * 10);
+}
+
+function formatStatChange(base, effective) {
+    if (effective > base) return `<span class="bonus-green">${effective}</span>`;
+    else if (effective < base) return `<span class="penalty-red">${effective}</span>`;
+    return effective;
 }
 
 function weightedRandom(weights) {
@@ -333,7 +342,8 @@ async function startMatch() {
         userScore:0, aiScore:0, attackNum:0, finished:false,
         waitingForGoalie:false, currentAttacker:null, currentDefender:null,
         aiForwardAction:null, aiDefenderAction:null, phase:'',
-        attackerMomentum: false  // флаг для моментума при броске
+        attackerMomentum: false,
+        nextStep: null // функция продолжения
     };
     updateMatchUI();
     nextAttack();
@@ -390,9 +400,9 @@ function showUserAttackOptions(forward, defender) {
     let logDiv = document.getElementById('eventLog');
     let actionsDiv = document.getElementById('actionButtons');
     duelDiv.innerHTML = `
-        <div class="duel-card"><img src="${forward.avatar}"><div class="name">${forward.name}</div><div class="pos">Нап (SPD:${getEffectiveStat(forward,'spd')} SHT:${getEffectiveStat(forward,'sht')} DRB:${getEffectiveStat(forward,'drb')})</div></div>
+        <div class="duel-card"><img src="${forward.avatar}"><div class="name">${forward.name}</div><div class="pos">Нап (SPD:${formatStatChange(forward.spd, getEffectiveStat(forward,'spd'))} SHT:${formatStatChange(forward.sht, getEffectiveStat(forward,'sht'))} DRB:${formatStatChange(forward.drb, getEffectiveStat(forward,'drb'))})</div></div>
         <div class="vs-text">VS</div>
-        <div class="duel-card"><img src="${defender.avatar}"><div class="name">${defender.name}</div><div class="pos">Защ (SPD:${getEffectiveStat(defender,'spd')} BLK:${getEffectiveStat(defender,'blk')} DEF:${getEffectiveStat(defender,'def')})</div></div>`;
+        <div class="duel-card"><img src="${defender.avatar}"><div class="name">${defender.name}</div><div class="pos">Защ (SPD:${formatStatChange(defender.spd, getEffectiveStat(defender,'spd'))} BLK:${formatStatChange(defender.blk, getEffectiveStat(defender,'blk'))} DEF:${formatStatChange(defender.def, getEffectiveStat(defender,'def'))})</div></div>`;
     logDiv.innerText = 'Твоя атака: выбери действие';
     actionsDiv.innerHTML = `
         <button class="btn action-btn" onclick="userAttackAction('speed')">⚡ Скорость</button>
@@ -406,42 +416,60 @@ function userAttackAction(action) {
     let f = ms.currentAttacker, d = ms.currentDefender;
     let defAction = chooseAIAction(d, ['speed','block','def']);
     let resultType = FORWARD_VS_DEFENSE[action][defAction];
-    let [fwWin, method] = resolveDuel(f, d, action, defAction, resultType, true);
-    let log = document.getElementById('eventLog');
+    let [fwWin, method, attVal, defVal] = resolveDuel(f, d, action, defAction, resultType, true);
+    // Формируем подробное описание
+    let logText = `⚔️ Форвард: <b>${f.name}</b> (${action}) – Атака ${attVal} | Защитник: <b>${d.name}</b> (${defAction}) – Защита ${defVal}<br>`;
+    logText += method;
     if (fwWin) {
-        ms.attackerMomentum = true; // моментум активирован
-        log.innerText = `✅ Прорыв! ${method}`;
-        // бросок по вратарю AI с моментумом
-        let gAction = chooseAIAction(ms.aiGoalie, ['reaction','movement','reliability']);
-        let [goal, method2] = resolveGoalieWithMomentum(f, ms.aiGoalie, action, gAction);
-        if (goal) {
-            ms.userScore++;
-            log.innerText = `🚨 ГОЛ! ${f.name} пробил ${ms.aiGoalie.name} (${method2})`;
-            ms.attackerMomentum = false;
-        } else {
-            // проверяем добивание
-            let diff = getEffectiveStat(ms.aiGoalie, gAction) - getEffectiveStat(f, action) - (ms.attackerMomentum?10:0); // пересчитаем в функции
-            // вместо пересчёта просто вызовем функцию добивания, если разница <=10
-            let [reboundGoal, reboundMethod] = resolveRebound(f, ms.aiGoalie, action, gAction);
-            if (reboundGoal) {
-                ms.userScore++;
-                log.innerText = `🥅 Добивание! ${f.name} с пятака (${reboundMethod})`;
-            } else {
-                log.innerText = `🛑 Сейв ${ms.aiGoalie.name} (${method2})`;
-            }
-        }
+        ms.attackerMomentum = true;
+        logText += `<br>✅ Прорыв! Форвард выходит на ворота.`;
+        document.getElementById('eventLog').innerHTML = logText;
+        // кнопка "Далее", которая вызовет бросок по вратарю
+        ms.nextStep = () => goaliePhaseForUserAttack(f, action);
+        showNextButton();
     } else {
-        log.innerText = `❌ ${d.name} остановил атаку (${method})`;
+        logText += `<br>❌ Защитник остановил атаку.`;
+        document.getElementById('eventLog').innerHTML = logText;
+        f.usedSkills[action] = (f.usedSkills[action]||0) + 1;
+        d.usedSkills[defAction] = (d.usedSkills[defAction]||0) + 1;
+        ms.attackNum++;
+        document.getElementById('matchScoreDisplay').innerText = `${ms.userScore} : ${ms.aiScore}`;
+        ms.nextStep = () => { clearNextButton(); nextAttack(); };
+        showNextButton();
     }
-    // усталость
-    f.usedSkills[action] = (f.usedSkills[action]||0) + 1;
-    d.usedSkills[defAction] = (d.usedSkills[defAction]||0) + 1;
-    ms.attackNum++;
-    document.getElementById('actionButtons').innerHTML = '';
-    document.getElementById('matchScoreDisplay').innerText = `${ms.userScore} : ${ms.aiScore}`;
-    setTimeout(() => { if (!ms.finished) nextAttack(); }, 2000);
 }
 
+function goaliePhaseForUserAttack(forward, fwAction) {
+    let ms = matchState;
+    let aiGoalie = ms.aiGoalie;
+    let gAction = chooseAIAction(aiGoalie, ['reaction','movement','reliability']);
+    let [goal, method, fwVal, glVal] = resolveGoalieWithMomentum(forward, aiGoalie, fwAction, gAction);
+    let logText = `🥅 Бросок по воротам!<br>Форвард: <b>${forward.name}</b> (${fwAction}) – ${fwVal} | Вратарь: <b>${aiGoalie.name}</b> (${gAction}) – ${glVal}<br>`;
+    logText += method;
+    if (goal) {
+        ms.userScore++;
+        logText += `<br>🚨 ГОЛ!`;
+        ms.attackerMomentum = false;
+    } else {
+        // добивание
+        let [reboundGoal, reboundMethod] = resolveRebound(forward, aiGoalie, fwAction, gAction);
+        if (reboundGoal) {
+            ms.userScore++;
+            logText += `<br>🥅 Добивание! ${reboundMethod}`;
+        } else {
+            logText += `<br>🛑 Сейв вратаря!`;
+        }
+    }
+    forward.usedSkills[fwAction] = (forward.usedSkills[fwAction]||0) + 1;
+    aiGoalie.usedSkills[gAction] = (aiGoalie.usedSkills[gAction]||0) + 1;
+    ms.attackNum++;
+    document.getElementById('eventLog').innerHTML = logText;
+    document.getElementById('matchScoreDisplay').innerText = `${ms.userScore} : ${ms.aiScore}`;
+    ms.nextStep = () => { clearNextButton(); nextAttack(); };
+    showNextButton();
+}
+
+// AI атака – защитник
 function showAIAttackDefenderChoice(aiForward, userDefender) {
     let ms = matchState;
     ms.aiForwardAction = chooseAIAction(aiForward, ['speed','shot','deke']);
@@ -449,9 +477,9 @@ function showAIAttackDefenderChoice(aiForward, userDefender) {
     let logDiv = document.getElementById('eventLog');
     let actionsDiv = document.getElementById('actionButtons');
     duelDiv.innerHTML = `
-        <div class="duel-card"><img src="${aiForward.avatar}"><div class="name">${aiForward.name}</div><div class="pos">Нап (SPD:${getEffectiveStat(aiForward,'spd')} SHT:${getEffectiveStat(aiForward,'sht')} DRB:${getEffectiveStat(aiForward,'drb')})</div></div>
+        <div class="duel-card"><img src="${aiForward.avatar}"><div class="name">${aiForward.name}</div><div class="pos">Нап (SPD:${formatStatChange(aiForward.spd, getEffectiveStat(aiForward,'spd'))} SHT:${formatStatChange(aiForward.sht, getEffectiveStat(aiForward,'sht'))} DRB:${formatStatChange(aiForward.drb, getEffectiveStat(aiForward,'drb'))})</div></div>
         <div class="vs-text">VS</div>
-        <div class="duel-card"><img src="${userDefender.avatar}"><div class="name">${userDefender.name}</div><div class="pos">Защ (SPD:${getEffectiveStat(userDefender,'spd')} BLK:${getEffectiveStat(userDefender,'blk')} DEF:${getEffectiveStat(userDefender,'def')})</div></div>`;
+        <div class="duel-card"><img src="${userDefender.avatar}"><div class="name">${userDefender.name}</div><div class="pos">Защ (SPD:${formatStatChange(userDefender.spd, getEffectiveStat(userDefender,'spd'))} BLK:${formatStatChange(userDefender.blk, getEffectiveStat(userDefender,'blk'))} DEF:${formatStatChange(userDefender.def, getEffectiveStat(userDefender,'def'))})</div></div>`;
     logDiv.innerText = 'Соперник атакует! Выбери действие защитника:';
     actionsDiv.innerHTML = `
         <button class="btn action-btn" onclick="userDefendAction('speed')">⚡ Скорость</button>
@@ -465,34 +493,38 @@ function userDefendAction(defAction) {
     let f = ms.currentAttacker, d = ms.currentDefender;
     let fwAction = ms.aiForwardAction;
     let resultType = FORWARD_VS_DEFENSE[fwAction][defAction];
-    let [fwWin, method] = resolveDuel(f, d, fwAction, defAction, resultType, false);
-    let log = document.getElementById('eventLog');
+    let [fwWin, method, attVal, defVal] = resolveDuel(f, d, fwAction, defAction, resultType, false);
+    let logText = `⚔️ Форвард AI: <b>${f.name}</b> (${fwAction}) – Атака ${attVal} | Защитник: <b>${d.name}</b> (${defAction}) – Защита ${defVal}<br>`;
+    logText += method;
     if (fwWin) {
-        log.innerText = `⚠️ ${f.name} прорвался! (${method}) Выбери действие вратаря:`;
+        ms.attackerMomentum = true;
+        logText += `<br>⚠️ Прорыв! Соперник выходит на ворота.`;
+        document.getElementById('eventLog').innerHTML = logText;
         ms.phase = 'ai_attack_goalie';
-        showGoalieChoice(f);
+        ms.nextStep = () => showGoalieChoice(f);
+        showNextButton();
     } else {
-        log.innerText = `✅ ${d.name} остановил атаку (${method})`;
+        logText += `<br>✅ Защитник остановил атаку.`;
+        document.getElementById('eventLog').innerHTML = logText;
         d.usedSkills[defAction] = (d.usedSkills[defAction]||0) + 1;
         f.usedSkills[fwAction] = (f.usedSkills[fwAction]||0) + 1;
         ms.attackNum++;
-        document.getElementById('actionButtons').innerHTML = '';
         document.getElementById('matchScoreDisplay').innerText = `${ms.userScore} : ${ms.aiScore}`;
-        setTimeout(() => { if (!ms.finished) nextAttack(); }, 2000);
+        ms.nextStep = () => { clearNextButton(); nextAttack(); };
+        showNextButton();
     }
 }
 
 function showGoalieChoice(forward) {
     let ms = matchState;
-    ms.attackerMomentum = true; // AI форвард получает моментум после обыгрыша защитника
     let duelDiv = document.getElementById('duelContainer');
     let logDiv = document.getElementById('eventLog');
     let actionsDiv = document.getElementById('actionButtons');
     duelDiv.innerHTML = `
         <div class="duel-card"><img src="${forward.avatar}"><div class="name">${forward.name}</div><div class="pos">Форвард</div></div>
         <div class="vs-text">VS</div>
-        <div class="duel-card"><img src="${matchState.myGoalie.avatar}"><div class="name">${matchState.myGoalie.name}</div><div class="pos">Вратарь (RCT:${getEffectiveStat(matchState.myGoalie,'rct')} MOV:${getEffectiveStat(matchState.myGoalie,'mov')} REL:${getEffectiveStat(matchState.myGoalie,'rel')})</div></div>`;
-    logDiv.innerText = `Форвард использовал "${ms.aiForwardAction}". Выбери действие вратаря:`;
+        <div class="duel-card"><img src="${matchState.myGoalie.avatar}"><div class="name">${matchState.myGoalie.name}</div><div class="pos">Вратарь (RCT:${formatStatChange(matchState.myGoalie.rct, getEffectiveStat(matchState.myGoalie,'rct'))} MOV:${formatStatChange(matchState.myGoalie.mov, getEffectiveStat(matchState.myGoalie,'mov'))} REL:${formatStatChange(matchState.myGoalie.rel, getEffectiveStat(matchState.myGoalie,'rel'))})</div></div>`;
+    logDiv.innerText = `Форвард AI использовал "${ms.aiForwardAction}". Выбери действие вратаря:`;
     actionsDiv.innerHTML = `
         <button class="btn action-btn" onclick="userGoalieAction('reaction')">🧤 Реакция</button>
         <button class="btn action-btn" onclick="userGoalieAction('movement')">🏃 Перемещение</button>
@@ -504,97 +536,105 @@ function userGoalieAction(glAction) {
     let ms = matchState;
     let f = ms.currentAttacker;
     let fwAction = ms.aiForwardAction;
-    let [goal, method] = resolveGoalieWithMomentum(f, ms.myGoalie, fwAction, glAction);
-    let log = document.getElementById('eventLog');
+    let [goal, method, fwVal, glVal] = resolveGoalieWithMomentum(f, ms.myGoalie, fwAction, glAction);
+    let logText = `🥅 Бросок AI!<br>Форвард: <b>${f.name}</b> (${fwAction}) – ${fwVal} | Вратарь: <b>${ms.myGoalie.name}</b> (${glAction}) – ${glVal}<br>`;
+    logText += method;
     if (goal) {
         ms.aiScore++;
-        log.innerText = `😞 Гол! ${f.name} забил (${method})`;
+        logText += `<br>😞 Гол!`;
         ms.attackerMomentum = false;
     } else {
-        // добивание для AI
         let [reboundGoal, reboundMethod] = resolveRebound(f, ms.myGoalie, fwAction, glAction);
         if (reboundGoal) {
             ms.aiScore++;
-            log.innerText = `🥅 Добивание AI! ${f.name} с пятака (${reboundMethod})`;
+            logText += `<br>🥅 Добивание AI! ${reboundMethod}`;
         } else {
-            log.innerText = `🧤 Сейв ${ms.myGoalie.name}! (${method})`;
+            logText += `<br>🧤 Сейв!`;
         }
     }
     ms.myGoalie.usedSkills[glAction] = (ms.myGoalie.usedSkills[glAction]||0) + 1;
     f.usedSkills[fwAction] = (f.usedSkills[fwAction]||0) + 1;
     ms.attackNum++;
     ms.phase = '';
-    document.getElementById('actionButtons').innerHTML = '';
+    document.getElementById('eventLog').innerHTML = logText;
     document.getElementById('matchScoreDisplay').innerText = `${ms.userScore} : ${ms.aiScore}`;
-    setTimeout(() => { if (!ms.finished) nextAttack(); }, 2000);
+    ms.nextStep = () => { clearNextButton(); nextAttack(); };
+    showNextButton();
 }
 
-// --- Новые функции дуэлей с асимметричными бонусами, моментумом и добиванием ---
+// Вспомогательные функции дуэлей с возвратом чисел
 function resolveDuel(attacker, defender, attSkill, defSkill, resultType, isUserAttacking) {
+    let attBase = attacker[attSkill];
+    let defBase = defender[defSkill];
     let attStat = getEffectiveStat(attacker, attSkill);
     let defStat = getEffectiveStat(defender, defSkill);
-    let attWin = false, method = '';
-    // Асимметричные бонусы: форварду +30, защите +15
+    let attWin = false, method = '', attShow = attStat, defShow = defStat;
     if (resultType === 'bonus_fwd') {
         attStat += 30;
+        attShow = `<span class="bonus-green">${attStat}</span>`;
         attWin = attStat > defStat;
-        method = `${attSkill} +30 (${attStat}) vs ${defSkill} (${defStat})`;
+        method = `Бонус форварду +30: ${attShow} vs ${defShow}`;
     } else if (resultType === 'bonus_def') {
         defStat += 15;
+        defShow = `<span class="bonus-green">${defStat}</span>`;
         attWin = attStat > defStat;
-        method = `${attSkill} (${attStat}) vs ${defSkill}+15 (${defStat})`;
-    } else { // neutral
+        method = `Бонус защите +15: ${attShow} vs ${defShow}`;
+    } else {
         attWin = attStat > defStat;
-        method = `${attSkill} (${attStat}) vs ${defSkill} (${defStat}) нейтраль`;
+        method = `Нейтраль: ${attShow} vs ${defShow}`;
     }
-    return [attWin, method];
+    return [attWin, method, attShow, defShow];
 }
 
 function resolveGoalieWithMomentum(forward, goalie, fwSkill, glSkill) {
     let fwStat = getEffectiveStat(forward, fwSkill);
     let glStat = getEffectiveStat(goalie, glSkill);
-    if (matchState.attackerMomentum) fwStat += 10; // моментум +10
+    let fwShow = fwStat, glShow = glStat;
+    if (matchState.attackerMomentum) {
+        fwStat += 10;
+        fwShow = `<span class="bonus-green">${fwStat}</span>`;
+    }
     let goal = false, method = '';
     let resultType = FORWARD_VS_GOALIE[fwSkill][glSkill];
     if (resultType === 'bonus_fwd') {
         fwStat += 30;
+        fwShow = `<span class="bonus-green">${fwStat}</span>`;
         goal = fwStat > glStat;
-        method = `${fwSkill}+30 (${fwStat}) vs ${glSkill} (${glStat}) [моментум]`;
+        method = `Бонус форварду +30: ${fwShow} vs ${glShow}`;
     } else if (resultType === 'bonus_gl') {
         glStat += 15;
+        glShow = `<span class="bonus-green">${glStat}</span>`;
         goal = fwStat > glStat;
-        method = `${fwSkill} (${fwStat}) vs ${glSkill}+15 (${glStat}) [моментум]`;
-    } else { // neutral
+        method = `Бонус вратарю +15: ${fwShow} vs ${glShow}`;
+    } else {
         goal = fwStat > glStat;
-        method = `${fwSkill} (${fwStat}) vs ${glSkill} (${glStat}) нейтраль [моментум]`;
+        method = `Нейтраль: ${fwShow} vs ${glShow}`;
     }
-    return [goal, method];
+    return [goal, method, fwShow, glShow];
 }
 
 function resolveRebound(forward, goalie, fwSkill, glSkill) {
-    // Если вратарь выиграл основную дуэль с разницей <= 10, то добивание
-    let fwStat = getEffectiveStat(forward, fwSkill) + (matchState.attackerMomentum ? 10 : 0);
+    let fwStat = getEffectiveStat(forward, fwSkill);
     let glStat = getEffectiveStat(goalie, glSkill);
+    if (matchState.attackerMomentum) fwStat += 10;
     let resultType = FORWARD_VS_GOALIE[fwSkill][glSkill];
-    // Посчитаем, выиграл ли вратарь с разницей <= 10
-    let glWin = false;
+    let glWin = false, diff = 0;
     if (resultType === 'bonus_fwd') {
-        glWin = (fwStat + 30) <= glStat;
-        var diff = glStat - (fwStat + 30);
+        let fwBonus = fwStat + 30;
+        glWin = fwBonus <= glStat;
+        diff = glStat - fwBonus;
     } else if (resultType === 'bonus_gl') {
-        glWin = fwStat <= (glStat + 15);
-        var diff = (glStat + 15) - fwStat;
+        let glBonus = glStat + 15;
+        glWin = fwStat <= glBonus;
+        diff = glBonus - fwStat;
     } else {
         glWin = fwStat <= glStat;
-        var diff = glStat - fwStat;
+        diff = glStat - fwStat;
     }
     if (!glWin || diff > 10) return [false, ''];
-
-    // Добивание: вратарь с половинным статом, форвард без бонуса, но с моментумом
-    let glStatHalf = Math.floor(glStat / 2);
-    let fwStatRebound = fwStat; // моментум уже учтён в fwStat при подсчёте выше
-    let goal = fwStatRebound > glStatHalf;
-    let method = goal ? `Добивание: ${fwStatRebound} vs ${glStatHalf}` : '';
+    let glHalf = Math.floor(glStat / 2);
+    let goal = fwStat > glHalf;
+    let method = goal ? `Добивание: ${fwStat} vs ${glHalf}` : '';
     return [goal, method];
 }
 
@@ -605,22 +645,34 @@ function endMatch() {
     if (ms.userScore>ms.aiScore) { userData.wins++; if (userData.wins >= userData.level*100) userData.level++; }
     userData.coins += reward;
     saveUserData();
-    document.getElementById('eventLog').innerText += ` | +${reward} монет`;
+    document.getElementById('eventLog').innerHTML += `<br>🏁 Матч завершён! +${reward} монет`;
     document.getElementById('finishMatchBtn').style.display = 'inline-block';
     document.getElementById('actionButtons').innerHTML = '';
+    ms.nextStep = null;
 }
-
 function exitMatch() {
     matchState = null;
     showScreen('mainScreen');
     updateUI();
 }
-
 function updateMatchUI() {
     document.getElementById('matchScoreDisplay').innerText = `${matchState.userScore} : ${matchState.aiScore}`;
 }
 
-// Интерфейс
+function showNextButton() {
+    let actionsDiv = document.getElementById('actionButtons');
+    actionsDiv.innerHTML = '<button class="btn" onclick="proceedNext()">▶ Далее</button>';
+}
+function clearNextButton() {
+    document.getElementById('actionButtons').innerHTML = '';
+}
+function proceedNext() {
+    if (matchState && matchState.nextStep) {
+        matchState.nextStep();
+    }
+}
+
+// Интерфейс (без изменений)
 function togglePlayer(card) {
     let t = userData.team;
     if (card.pos==='F') {
@@ -741,6 +793,7 @@ window.exitMatch = exitMatch;
 window.resetProgress = resetProgress;
 window.showScreen = showScreen;
 window.openBooster = openBooster;
+window.proceedNext = proceedNext;
 
 loadUserData().then(() => { updateUI(); setInterval(updateUI, 60000); });
 </script>
